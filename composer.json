@@ -1,0 +1,19 @@
+{
+  "name": "chinayin/think-command",
+  "require": {
+    "chinayin/thinkphp5": "~5.0",
+    "chinayin/mns-sdk-php": "^1.3"
+  },
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "chinayin",
+      "email": "whereismoney@qq.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "think\\command\\": "src"
+    }
+  }
+}
