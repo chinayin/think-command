@@ -66,20 +66,26 @@ abstract class ThinkCommand extends Command
     /** 打印任务头 */
     protected function printSerialVersion(Input $input, Output $output)
     {
-        $output->comment(str_pad('', 50, '='));
-        $output->comment(sprintf(
-            'Env: <info>%s</info> <highlight>%s</highlight>',
-            \think\Config::get('app_status'),
-            (IS_PRODUCTION ? '(PROD)' : '')
-        ));
-        $output->comment(sprintf('SerialVersion: <info>%s</info>', $this->getSerialVersion()));
-        $output->comment(sprintf(
-            'Options: debug: <info>%s</info>, force: <info>%s</info>',
-            $this->isDebug ? 'true' : 'false',
-            $this->isForce ? 'true' : 'false'
-        ));
-        $output->comment(sprintf('TimeStamp: <info>%s</info>', date('Y-m-d H:i:s')));
-        $output->comment(str_pad('', 50, '='));
+        $s = [
+            str_pad('', 50, '='),
+            sprintf(
+                'Env: <info>%s</info> <highlight>%s</highlight>',
+                \think\Config::get('app_status'),
+                (IS_PRODUCTION ? '(PROD)' : '')
+            ),
+            sprintf('SerialVersion: <info>%s</info>', $this->getSerialVersion()),
+            sprintf(
+                'Options: debug - <info>%s</info>, force - <info>%s</info>',
+                $this->isDebug ? 'true' : 'false',
+                $this->isForce ? 'true' : 'false'
+            ),
+            sprintf('TimeStamp: <info>%s</info>', date('Y-m-d H:i:s')),
+            str_pad('', 50, '='),
+        ];
+        $s = implode(PHP_EOL, $s);
+        $output->comment($s);
+        __LOG_MESSAGE(PHP_EOL . strip_tags($s));
+        unset($s);
     }
 
     /** 设置日志保存路径 */
@@ -107,10 +113,12 @@ abstract class ThinkCommand extends Command
     {
         parent::configure();
         $this->setName($this->commandName)->setDescription($this->commandDescription);
-        $this->serialId = time() . '-' . uniqid();
-        $this->serialVersion = $this->getName() . '-' . $this->serialId;
+        $this->serialId = uniqid();
+        $this->serialVersion = str_replace(':', '-', $this->getName()) . '-' . $this->serialId;
         $this->addOption('debug', null, Option::VALUE_OPTIONAL, 'is debug mode?', false);
         $this->addOption('force', null, Option::VALUE_OPTIONAL, 'is force?', false);
+        // 命令行参数配置
+        $this->setCommandDefinition();
     }
 
     /** 任务运行 */
@@ -128,6 +136,9 @@ abstract class ThinkCommand extends Command
         $this->handleErrorWarn();
         $this->output->writeln(PHP_EOL . 'done.');
     }
+
+    /** 命令行参数配置 */
+    protected function setCommandDefinition() { }
 
     /** 执行命令主函数 */
     abstract protected function main(Input $input, Output $output);
