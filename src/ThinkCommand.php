@@ -33,26 +33,6 @@ abstract class ThinkCommand extends Command
     /** @var array 警告输出 */
     private $warns = [];
 
-    /**
-     * 控制台输出,记录日志.
-     *
-     * @param       $format
-     * @param mixed ...$args
-     */
-    protected function print($format, ...$args)
-    {
-        $msg = count($args) > 0 ? sprintf($format, ...$args) : $format;
-        __LOG_MESSAGE($msg);
-        $this->output->write($msg);
-    }
-
-    protected function println($format, ...$args)
-    {
-        $msg = count($args) > 0 ? sprintf($format, ...$args) : $format;
-        __LOG_MESSAGE($msg);
-        $this->output->writeln($msg);
-    }
-
     protected function getSerialVersion()
     {
         return $this->serialVersion;
@@ -61,6 +41,16 @@ abstract class ThinkCommand extends Command
     protected function getSerialId()
     {
         return $this->serialId;
+    }
+
+    protected function isDebugMode(): bool
+    {
+        return $this->isDebug;
+    }
+
+    protected function isForceMode(): bool
+    {
+        return $this->isForce;
     }
 
     /** 打印任务头 */
@@ -115,8 +105,8 @@ abstract class ThinkCommand extends Command
         $this->setName($this->commandName)->setDescription($this->commandDescription);
         $this->serialId = uniqid();
         $this->serialVersion = str_replace(':', '-', $this->getName()) . '-' . $this->serialId;
-        $this->addOption('debug', null, Option::VALUE_OPTIONAL, 'is debug mode?', false);
-        $this->addOption('force', null, Option::VALUE_OPTIONAL, 'is force?', false);
+        $this->addOption('debug', 'd', Option::VALUE_OPTIONAL, 'is debug mode?', false);
+        $this->addOption('force', 'f', Option::VALUE_OPTIONAL, 'is force mode?', false);
         // 命令行参数配置
         $this->setCommandDefinition();
     }
@@ -158,6 +148,26 @@ abstract class ThinkCommand extends Command
                  ] as $style) {
             $output->{$style}($style);
         }
+    }
+
+    /**
+     * 控制台输出,记录日志.
+     *
+     * @param       $format
+     * @param mixed ...$args
+     */
+    protected function print($format, ...$args)
+    {
+        $msg = count($args) > 0 ? sprintf($format, ...$args) : $format;
+        __LOG_MESSAGE($msg);
+        $this->output->write($msg);
+    }
+
+    protected function println($format, ...$args)
+    {
+        $msg = count($args) > 0 ? sprintf($format, ...$args) : $format;
+        __LOG_MESSAGE($msg);
+        $this->output->writeln($msg);
     }
 
     /**
