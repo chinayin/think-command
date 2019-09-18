@@ -105,10 +105,15 @@ abstract class ThinkCommand extends Command
         $this->setName($this->commandName)->setDescription($this->commandDescription);
         $this->serialId = uniqid();
         $this->serialVersion = str_replace(':', '-', $this->getName()) . '-' . $this->serialId;
-        $this->addOption('debug', 'd', Option::VALUE_OPTIONAL, 'is debug mode?', false);
-        $this->addOption('force', 'f', Option::VALUE_OPTIONAL, 'is force mode?', false);
+        $defaultDefinition = [
+            new Option('debug', 'd', Option::VALUE_OPTIONAL, 'is debug mode?', false),
+            new Option('force', 'f', Option::VALUE_OPTIONAL, 'is force mode?', false),
+        ];
+        $definitions = array_merge($defaultDefinition,
+            (is_array($this->buildCommandDefinition()) ? $this->buildCommandDefinition() : []));
         // 命令行参数配置(数组)
-        is_array($this->buildCommandDefinition()) && $this->setDefinition($this->buildCommandDefinition());
+        $this->setDefinition($definitions);
+        unset($definitions);
         // 命令行参数配置(可覆盖)
         $this->setCommandDefinition();
     }
@@ -123,10 +128,13 @@ abstract class ThinkCommand extends Command
         // 打印任务头
         $this->printSerialVersion($input, $output);
         // 主函数
-        $this->main($input, $output);
+        $statusCode = $this->main($input, $output);
         // 输出错误信息
-        $this->handleErrorWarn();
+        ($statusCode !== true && $statusCode != 0) && $this->handleErrorWarn();
+        // done
+        __LOG_MESSAGE('done.');
         $this->output->writeln(PHP_EOL . 'done.');
+        return $statusCode;
     }
 
     /** 命令行参数配置 */
