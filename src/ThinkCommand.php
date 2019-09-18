@@ -107,6 +107,8 @@ abstract class ThinkCommand extends Command
         $this->serialVersion = str_replace(':', '-', $this->getName()) . '-' . $this->serialId;
         $this->addOption('debug', 'd', Option::VALUE_OPTIONAL, 'is debug mode?', false);
         $this->addOption('force', 'f', Option::VALUE_OPTIONAL, 'is force mode?', false);
+        // 命令行参数配置(数组)
+        is_array($this->buildCommandDefinition()) && $this->setDefinition($this->buildCommandDefinition());
         // 命令行参数配置
         $this->setCommandDefinition();
     }
@@ -129,6 +131,17 @@ abstract class ThinkCommand extends Command
 
     /** 命令行参数配置 */
     protected function setCommandDefinition() { }
+
+    /**
+     * 命令行参数配置(通过数组定义) -- 推荐使用
+     * return [
+     * new Argument('namespace', InputArgument::OPTIONAL, 'The namespace name'),
+     * new Option('raw', null, InputOption::VALUE_NONE, 'To output raw command list')
+     * ];
+     *
+     * @return null|array
+     */
+    protected function buildCommandDefinition() { }
 
     /** 执行命令主函数 */
     abstract protected function main(Input $input, Output $output);
