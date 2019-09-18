@@ -109,7 +109,7 @@ abstract class ThinkCommand extends Command
         $this->addOption('force', 'f', Option::VALUE_OPTIONAL, 'is force mode?', false);
         // 命令行参数配置(数组)
         is_array($this->buildCommandDefinition()) && $this->setDefinition($this->buildCommandDefinition());
-        // 命令行参数配置
+        // 命令行参数配置(可覆盖)
         $this->setCommandDefinition();
     }
 
