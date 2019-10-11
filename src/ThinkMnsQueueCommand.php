@@ -9,6 +9,7 @@ namespace think\command;
 use AliyunMNS\Client as MnsClient;
 use AliyunMNS\Exception\MnsException;
 use think\console\Input;
+use think\console\input\Option;
 use think\console\Output;
 
 /**
@@ -44,6 +45,8 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     private $mnsClient;
     // 已收入的队列信息 (这里的信息会删除掉)
     private $receiptHandles;
+    // 是否允许动态覆盖队列名称
+    protected $allowOverrideQueueTopicName = false;
 
     // 获取mns配置
     protected function getMnsConfigs()
@@ -98,8 +101,15 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     /**
      * 动态配置队列主题名称
      */
-    protected function dynamicPresetQueueTopicName()
+    protected function dynamicOverrideQueueTopicName()
     {
+        if (!$this->allowOverrideQueueTopicName) {
+            return;
+        }
+        $queueName = $this->input->getOption('queue');
+        empty($queueName) || $this->setQueueName($queueName);
+        $topicName = $this->input->getOption('topic');
+        empty($topicName) || $this->setTopicName($topicName);
     }
 
     // 获取mnsClient
@@ -140,6 +150,15 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
         return $this->mnsClient;
     }
 
+    // 命令行参数配置
+    protected function buildCommandDefinition()
+    {
+        return [
+            new Option('queue', null, Option::VALUE_OPTIONAL, 'Override queue name'),
+            new Option('topic', null, Option::VALUE_OPTIONAL, 'Override topic name'),
+        ];
+    }
+
     /**
      * 主函数.
      *
@@ -149,7 +168,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     protected function main(Input $input, Output $output)
     {
         // 动态配置队列主题名称
-        $this->dynamicPresetQueueTopicName();
+        $this->dynamicOverrideQueueTopicName();
         // 显示队列名称
         empty($this->queueName) || $output->comment(sprintf('Queue: <info>%s</info>', $this->queueName));
         empty($this->topicName) || $output->comment(sprintf('Topic: <info>%s</info>', $this->topicName));
