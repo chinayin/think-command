@@ -63,14 +63,11 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
         $this->mnsConfigs = $mnsConfigs;
     }
 
-    protected function setQueueName(string $queueName)
+    /**
+     * 动态配置队列主题名称
+     */
+    protected function dynamicPresetQueueTopicName()
     {
-        $this->queueName = $queueName;
-    }
-
-    protected function setTopicName(string $topicName)
-    {
-        $this->topicName = $topicName;
     }
 
     // 获取mnsClient
@@ -119,7 +116,9 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
      */
     protected function main(Input $input, Output $output)
     {
-        //显示队列名称
+        // 动态配置队列主题名称
+        $this->dynamicPresetQueueTopicName();
+        // 显示队列名称
         empty($this->queueName) || $output->comment(sprintf('Queue: <info>%s</info>', $this->queueName));
         empty($this->topicName) || $output->comment(sprintf('Topic: <info>%s</info>', $this->topicName));
 
