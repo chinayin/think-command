@@ -64,6 +64,38 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     }
 
     /**
+     * @return mixed
+     */
+    public function getQueueName()
+    {
+        return $this->queueName;
+    }
+
+    /**
+     * @param mixed $queueName
+     */
+    public function setQueueName(string $queueName): void
+    {
+        $this->queueName = $queueName;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTopicName()
+    {
+        return $this->topicName;
+    }
+
+    /**
+     * @param mixed $topicName
+     */
+    public function setTopicName(string $topicName): void
+    {
+        $this->topicName = $topicName;
+    }
+
+    /**
      * 动态配置队列主题名称
      */
     protected function dynamicPresetQueueTopicName()
