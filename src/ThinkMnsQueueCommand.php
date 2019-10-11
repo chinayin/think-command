@@ -63,6 +63,16 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
         $this->mnsConfigs = $mnsConfigs;
     }
 
+    protected function setQueueName(string $queueName)
+    {
+        $this->queueName = $queueName;
+    }
+
+    protected function setTopicName(string $topicName)
+    {
+        $this->topicName = $topicName;
+    }
+
     // 获取mnsClient
     protected function getMnsClient()
     {
