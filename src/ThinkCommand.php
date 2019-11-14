@@ -86,10 +86,9 @@ abstract class ThinkCommand extends Command
      */
     protected function printExecutionCompleted()
     {
-        $s = PHP_EOL .
-            sprintf('done. { <info>%s</info>, t => <info>%s</info>, m => <info>%s</info> }',
-                date('c'),
-                Debug::getUseTime(1), Debug::getUseMem(1));
+        $s = sprintf('done. { <info>%s</info>, t => <info>%s</info>, m => <info>%s</info> }',
+            date('c'),
+            Debug::getUseTime(1), Debug::getUseMem(1));
         $this->output->writeln($s);
         __LOG_MESSAGE(PHP_EOL . strip_tags($s));
         unset($s);
