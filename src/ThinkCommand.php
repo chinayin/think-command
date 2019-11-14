@@ -6,6 +6,7 @@ use think\console\Command;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
+use think\Debug;
 
 /**
  * ThinkCommand.
@@ -53,8 +54,10 @@ abstract class ThinkCommand extends Command
         return $this->isForce;
     }
 
-    /** 打印任务头 */
-    protected function printSerialVersion(Input $input, Output $output)
+    /**
+     * 打印任务头
+     */
+    protected function printSerialVersion()
     {
         $s = [
             str_pad('', 50, '='),
@@ -65,15 +68,29 @@ abstract class ThinkCommand extends Command
             ),
             sprintf('SerialVersion: <info>%s</info>', $this->getSerialVersion()),
             sprintf(
-                'Options: debug - <info>%s</info>, force - <info>%s</info>',
+                'Options: debug => <info>%s</info>, force => <info>%s</info>',
                 $this->isDebug ? 'true' : 'false',
                 $this->isForce ? 'true' : 'false'
             ),
-            sprintf('TimeStamp: <info>%s</info>', date('Y-m-d H:i:s')),
+            sprintf('TimeStamp: <info>%s</info>', date('c')),
             str_pad('', 50, '='),
         ];
         $s = implode(PHP_EOL, $s);
-        $output->comment($s);
+        $this->output->comment($s);
+        __LOG_MESSAGE(PHP_EOL . strip_tags($s));
+        unset($s);
+    }
+
+    /**
+     * 程序执行完成
+     */
+    protected function printExecutionCompleted()
+    {
+        $s = PHP_EOL .
+            sprintf('done. { <info>%s</info>, t => <info>%s</info>, m => <info>%s</info> }',
+                date('c'),
+                Debug::getUseTime(1), Debug::getUseMem(1));
+        $this->output->writeln($s);
         __LOG_MESSAGE(PHP_EOL . strip_tags($s));
         unset($s);
     }
@@ -126,14 +143,13 @@ abstract class ThinkCommand extends Command
         // 解析配置
         $this->setOptions($input);
         // 打印任务头
-        $this->printSerialVersion($input, $output);
+        $this->printSerialVersion();
         // 主函数
         $statusCode = $this->main($input, $output);
         // 输出错误信息
         ($statusCode !== true && $statusCode != 0) && $this->handleErrorWarn();
         // done
-        __LOG_MESSAGE('done.');
-        $this->output->writeln(PHP_EOL . 'done.');
+        $this->printExecutionCompleted();
         return $statusCode;
     }
 
