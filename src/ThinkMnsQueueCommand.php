@@ -170,8 +170,16 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
         // 动态配置队列主题名称
         $this->dynamicOverrideQueueTopicName();
         // 显示队列名称
-        empty($this->queueName) || $this->println('Queue: <info>%s</info>', $this->queueName);
-        empty($this->topicName) || $this->println('Topic: <info>%s</info>', $this->topicName);
+        if (!empty($this->queueName)) {
+            $s = "Queue: <info>{$this->queueName}</info>";
+            $output->comment($s);
+            __LOG_MESSAGE(strip_tags($s));
+        }
+        if (!empty($this->topicName)) {
+            $s = "Topic: <info>{$this->topicName}</info>";
+            $output->comment($s);
+            __LOG_MESSAGE(strip_tags($s));
+        }
 
         while (true) {
             echo '.';
