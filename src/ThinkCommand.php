@@ -149,7 +149,7 @@ abstract class ThinkCommand extends Command
         // 主函数
         $statusCode = $this->main($input, $output);
         // 输出错误信息
-        ($statusCode !== true && $statusCode != 0) && $this->handleErrorWarn();
+        ($statusCode !== true && $statusCode !== 0) && $this->handleErrorWarn();
         // done
         $this->printExecutionCompleted();
         return $statusCode;
