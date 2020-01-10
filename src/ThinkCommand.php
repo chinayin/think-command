@@ -86,11 +86,12 @@ abstract class ThinkCommand extends Command
      */
     protected function printExecutionCompleted()
     {
-        $s = sprintf('done. { <info>%s</info>, seconds => <info>%s</info>, memory_get_usage => <info>%s</info>, memory_get_peak_usage => <info>%s</info> }',
+        $s = sprintf('done. { <info>%s</info>, seconds => <info>%s</info>, memory_get_usage => <info>%s</info>, memory_get_peak_usage => <info>%s</info>, pid => <info>%s</info> }',
             date('c'),
             Debug::getUseTime(1),
             Debug::getUseMem(1),
-            Debug::getUsePeakMem(1)
+            Debug::getUsePeakMem(1),
+            getmypid()
         );
         $this->output->writeln($s);
         __LOG_MESSAGE(PHP_EOL . strip_tags($s));
