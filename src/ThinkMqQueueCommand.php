@@ -140,6 +140,7 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                      "InstanceId: <info>{$this->getInstanceId()}</info>",
                      "GroupId: <info>{$this->getGroupId()}</info>",
                      "Topic: <info>{$this->getTopicName()}</info>",
+                     "Tag: <info>{$this->getMessageTag()}</info>",
                  ] as $s) {
             $output->comment($s);
             __LOG_MESSAGE(strip_tags($s));
@@ -155,20 +156,19 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                     $this->waitSeconds
                 );
                 $output->write('#');
-                __LOG_MESSAGE_DEBUG($messages, '$messages');
                 foreach ($messages as $message) {
                     $message_id = $message->getMessageId();
-                    $output->write(sprintf("msg_id: %s\t", $message_id));
-                    __LOG_MESSAGE($message_id, 'msg_id');
+                    // 消费次数
+                    $consumedTimes = $message->getConsumedTimes();
+                    $s = "msg_id: $message_id" . ($consumedTimes > 1 ? "($consumedTimes)" : '') . ' ';
+                    $output->write($s);
+                    __LOG_MESSAGE($s, 'msg_id');
+                    unset($s);
                     // 验证消息md5
                     if (strtoupper(md5($message->getMessageBody())) !== $message->getMessageBodyMD5()) {
                         throw new \Exception('MessageBodyMD5_NOT_MATCH');
                     }
                     $receiptHandle = $message->getReceiptHandle();
-                    // 消费次数
-                    $consumedTimes = $message->getConsumedTimes();
-                    $output->write(($consumedTimes > 1 ? $consumedTimes : ' ') . "\t");
-                    __LOG_MESSAGE($consumedTimes, 'consumedTimes__' . $message_id);
                     // 获取数组信息
                     $json = $this->getMessageBodyJson($message);
                     // 数据格式错误
@@ -183,10 +183,10 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                         // ack
                         $res = $this->getMQConsumer()->ackMessage([$receiptHandle]);
                         $output->writeln('OK');
-                        __LOG_MESSAGE('OK', "status__${message_id}");
+                        __LOG_MESSAGE('status = OK', $message_id);
                     } else {
                         $output->warning('FAIL');
-                        __LOG_MESSAGE('FAIL', "status__${message_id}");
+                        __LOG_MESSAGE('status = FAIL', $message_id);
                     }
                 }
                 unset($messages);
@@ -267,7 +267,7 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
         if (null === $this->configs) {
             $this->configs = config('mq');
             if (empty($this->configs)) {
-                throw new \Exception('config[mq] not found.');
+                throw new \Exception('config[mq] not found . ');
             }
         }
 
