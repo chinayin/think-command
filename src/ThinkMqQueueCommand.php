@@ -160,8 +160,8 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                     $message_id = $message->getMessageId();
                     // 消费次数
                     $consumedTimes = $message->getConsumedTimes();
-                    $s = "msg_id: $message_id" . ($consumedTimes > 1 ? "($consumedTimes)" : '') . ' ';
-                    $output->write($s);
+                    $s = "$message_id" . ($consumedTimes > 1 ? "($consumedTimes)" : '') . ' ';
+                    $output->write("msg_id: $s");
                     __LOG_MESSAGE($s, 'msg_id');
                     unset($s);
                     // 验证消息md5
