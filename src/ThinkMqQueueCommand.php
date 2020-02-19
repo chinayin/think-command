@@ -81,8 +81,8 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                 if (!empty($configs)) {
                     $this->client = new MQClient(
                         $configs['end_point'] ?? '',
-                        $configs['access_id'] ?? '',
-                        $configs['access_key'] ?? '',
+                        $configs['access_key_id'] ?? '',
+                        $configs['access_key_secret'] ?? '',
                         null
                     );
                 }
