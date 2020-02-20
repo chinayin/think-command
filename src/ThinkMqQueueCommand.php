@@ -3,6 +3,7 @@
 namespace think\command;
 
 use MQ\MQClient;
+use Swoole\Process\Pool;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
@@ -16,6 +17,8 @@ use think\console\Output;
  */
 abstract class ThinkMqQueueCommand extends ThinkCommand
 {
+    // 进程数 默认进程=1 进程数>1使用SwoolePool
+    protected $workerNum = 1;
     // 实例ID
     protected $instanceId;
     // 组ID
@@ -137,6 +140,7 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
         $this->dynamicOverrideTopicName();
         // 显示队列名称
         foreach ([
+                     "WorkerNum: <info>{$this->workerNum}</info>",
                      "InstanceId: <info>{$this->getInstanceId()}</info>",
                      "GroupId: <info>{$this->getGroupId()}</info>",
                      "Topic: <info>{$this->getTopicName()}</info>",
@@ -145,6 +149,45 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
             $output->comment($s);
             __LOG_MESSAGE(strip_tags($s));
         }
+        // 使用Swoole\Process\Pool
+        if ($this->workerNum > 1) {
+            $pool = new Pool($this->workerNum);
+            $pool->on("WorkerStart", [$this, 'workerStart']);
+            $pool->on("WorkerStop", [$this, 'workerStop']);
+            $pool->start();
+        } else {
+            // 单进程
+            $this->messageReceived();
+        }
+    }
+
+    /**
+     * @param Pool $pool
+     * @param int  $workerId
+     */
+    public function workerStop(Pool $pool, int $workerId)
+    {
+        __LOG_MESSAGE("Worker#{$workerId} is stopped");
+        $this->output->writeln("Worker#{$workerId} is stopped");
+    }
+
+    /**
+     * @param Pool $pool
+     * @param int  $workerId
+     */
+    public function workerStart(Pool $pool, int $workerId)
+    {
+        __LOG_MESSAGE("Worker#{$workerId} is started");
+        $this->output->writeln("Worker#{$workerId} is started");
+        $this->messageReceived($workerId);
+    }
+
+    /**
+     * 接收消息
+     */
+    private function messageReceived(int $workerId = 0)
+    {
+        $output = $this->output;
         while (true) {
             echo '.';
             try {
@@ -155,14 +198,14 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                     // 长轮询时间(最多可设置为30秒)
                     $this->waitSeconds
                 );
-                $output->write('#');
+//                $output->write('#');
                 foreach ($messages as $message) {
                     $message_id = $message->getMessageId();
                     // 消费次数
                     $consumedTimes = $message->getConsumedTimes();
                     $s = "$message_id" . ($consumedTimes > 1 ? "($consumedTimes)" : '') . ' ';
-                    $output->write("msg_id: $s");
-                    __LOG_MESSAGE($s, 'msg_id');
+                    $output->write("#$workerId MessageId $s");
+                    __LOG_MESSAGE($s, "#$workerId MessageId");
                     unset($s);
                     // 验证消息md5
                     if (strtoupper(md5($message->getMessageBody())) !== $message->getMessageBodyMD5()) {
