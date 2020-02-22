@@ -17,8 +17,6 @@ use think\console\Output;
  */
 abstract class ThinkMqQueueCommand extends ThinkCommand
 {
-    // 进程数 默认进程=1 进程数>1使用SwoolePool
-    protected $workerNum = 1;
     // 实例ID
     protected $instanceId;
     // 组ID

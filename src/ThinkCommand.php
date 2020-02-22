@@ -33,6 +33,8 @@ abstract class ThinkCommand extends Command
     private $errors = [];
     /** @var array 警告输出 */
     private $warns = [];
+    /**  @var int worker数(配合SwoolePool建议>0使用) */
+    protected $workerNum = 0;
 
     protected function getSerialVersion()
     {
@@ -116,6 +118,9 @@ abstract class ThinkCommand extends Command
         if (true === $input->hasParameterOption(['--force'])) {
             $this->isForce = true;
         }
+        if (true === $input->hasParameterOption(['--thread'])) {
+            $this->workerNum = (int)$input->getOption('thread');
+        }
     }
 
     /** 配置 */
@@ -128,6 +133,7 @@ abstract class ThinkCommand extends Command
         $defaultDefinition = [
             new Option('debug', 'd', Option::VALUE_OPTIONAL, 'is debug mode?', false),
             new Option('force', 'f', Option::VALUE_OPTIONAL, 'is force mode?', false),
+            new Option('thread', null, Option::VALUE_OPTIONAL, 'ThreadPool workerNum', 0),
         ];
         $definitions = array_merge($defaultDefinition,
             (is_array($this->buildCommandDefinition()) ? $this->buildCommandDefinition() : []));
