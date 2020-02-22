@@ -235,7 +235,7 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
      *
      * @return mixed
      */
-    abstract protected function handle(string $message_id, array $json, array $properties, $message);
+    abstract protected function consume(string $message_id, array $json, array $properties, $message);
 
     /**
      * 处理重试错误次数过多.
