@@ -27,6 +27,8 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
     protected $topicName;
     // 主题tag
     protected $messageTag;
+    // 重试到第N次消费,就删除
+    protected $maxConsumedTimes = 5;
     // 轮训时间30秒
     protected $waitSeconds = 30;
     // 批次获取消息的数量 (默认是1条 暂时不支持设置多条)
@@ -67,65 +69,6 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
         }
         $topicName = $this->input->getOption('topic');
         empty($topicName) || $this->setTopicName($topicName);
-    }
-
-    /**
-     * 获取Client
-     *
-     * @return MQClient
-     * @throws \Exception
-     */
-    protected function getMQClient()
-    {
-        // 非临时token的客户端
-        if (!$this->useStsToken) {
-            if (null === $this->client) {
-                $configs = $this->getConfigs();
-                if (!empty($configs)) {
-                    $this->client = new MQClient(
-                        $configs['end_point'] ?? '',
-                        $configs['access_key_id'] ?? '',
-                        $configs['access_key_secret'] ?? '',
-                        null
-                    );
-                }
-            }
-        } else { // 临时token方案
-            if (// 如果客户端未初始化
-                null === $this->client ||
-                // 不存在临时token
-                null === $this->stsToken ||
-                // 临时token 过期时间距离现在不足2分钟就重新申请新的
-                ((strtotime($this->stsToken['ExpireTime']) - time()) <= 2 * 60)
-            ) {
-                // 申请临时token
-                $this->stsToken = $this->queryTokenForMqQueue();
-                $this->client = new MQClient(
-                    $this->stsToken['EndPoint'] ?? '',
-                    $this->stsToken['AccessKeyId'] ?? '',
-                    $this->stsToken['AccessKeySecret'] ?? '',
-                    $this->stsToken['SecurityToken'] ?? ''
-                );
-            }
-        }
-
-        return $this->client;
-    }
-
-    /**
-     * @return \MQ\MQConsumer
-     * @throws \Exception
-     */
-    public function getMQConsumer()
-    {
-        if (null === $this->consumer) {
-            $instanceId = $this->getInstanceId();
-            $groupId = $this->getGroupId();
-            $topic = $this->getTopicName();
-            $messageTag = $this->getMessageTag();
-            $this->consumer = $this->getMQClient()->getConsumer($instanceId, $topic, $groupId, $messageTag);
-        }
-        return $this->consumer;
     }
 
     /**
@@ -198,7 +141,6 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                     // 长轮询时间(最多可设置为30秒)
                     $this->waitSeconds
                 );
-//                $output->write('#');
                 foreach ($messages as $message) {
                     $message_id = $message->getMessageId();
                     // 消费次数
@@ -212,6 +154,14 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                         throw new \Exception('MessageBodyMD5_NOT_MATCH');
                     }
                     $receiptHandle = $message->getReceiptHandle();
+                    // 处理最大消费失败
+                    if ($consumedTimes >= $this->maxConsumedTimes) {
+                        $this->triggerMaxConsumedTimes($message);
+                        $res = $this->getMQConsumer()->ackMessage([$receiptHandle]);
+                        $output->warning('MAX_CONSUMED_TIMES');
+                        __LOG_MESSAGE('status = MAX_CONSUMED_TIMES', $message_id);
+                        continue;
+                    }
                     // 获取数组信息
                     $json = $this->getMessageBodyJson($message);
                     // 数据格式错误
@@ -233,6 +183,10 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                     }
                 }
                 unset($messages);
+            } catch (\MQ\Exception\TopicNotExistException $e) {
+                __LOG_MESSAGE($e);
+                $output->error($e->getMessage());
+                exit;
             } catch (\MQ\Exception\MessageNotExistException $e) {
                 // 如果是没有消息 跳过不处理异常
                 if (404 == $e->getCode()) {
@@ -282,6 +236,80 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
      * @return mixed
      */
     abstract protected function handle(string $message_id, array $json, array $properties, $message);
+
+    /**
+     * 处理重试错误次数过多.
+     *
+     * @param mixed $message
+     */
+    protected function triggerMaxConsumedTimes($message)
+    {
+        $json = $this->getMessageBodyJson($message);
+        __LOG_MESSAGE_ERROR($json, sprintf('triggerMaxConsumedTimes___%s___%s',
+            $message->getMessageId(),
+            $message->getConsumedTimes()
+        ));
+        unset($json);
+    }
+
+    /**
+     * 获取Client
+     *
+     * @return MQClient
+     * @throws \Exception
+     */
+    protected function getMQClient()
+    {
+        // 非临时token的客户端
+        if (!$this->useStsToken) {
+            if (null === $this->client) {
+                $configs = $this->getConfigs();
+                if (!empty($configs)) {
+                    $this->client = new MQClient(
+                        $configs['end_point'] ?? '',
+                        $configs['access_key_id'] ?? '',
+                        $configs['access_key_secret'] ?? '',
+                        null
+                    );
+                }
+            }
+        } else { // 临时token方案
+            if (// 如果客户端未初始化
+                null === $this->client ||
+                // 不存在临时token
+                null === $this->stsToken ||
+                // 临时token 过期时间距离现在不足2分钟就重新申请新的
+                ((strtotime($this->stsToken['ExpireTime']) - time()) <= 2 * 60)
+            ) {
+                // 申请临时token
+                $this->stsToken = $this->queryTokenForMqQueue();
+                $this->client = new MQClient(
+                    $this->stsToken['EndPoint'] ?? '',
+                    $this->stsToken['AccessKeyId'] ?? '',
+                    $this->stsToken['AccessKeySecret'] ?? '',
+                    $this->stsToken['SecurityToken'] ?? ''
+                );
+            }
+        }
+
+        return $this->client;
+    }
+
+    /**
+     * @return \MQ\MQConsumer
+     * @throws \Exception
+     */
+    public function getMQConsumer()
+    {
+        if (null === $this->consumer) {
+            $instanceId = $this->getInstanceId();
+            $groupId = $this->getGroupId();
+            $topic = $this->getTopicName();
+            $messageTag = $this->getMessageTag();
+            $this->consumer = $this->getMQClient()->getConsumer($instanceId, $topic, $groupId, $messageTag);
+        }
+        return $this->consumer;
+    }
 
     /**
      * 申请临时token.
