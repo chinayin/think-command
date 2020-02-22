@@ -169,7 +169,7 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                         $ret = true;
                     } else {
                         // 消费
-                        $ret = $this->handle($message_id, $json, $message->getProperties(), $message);
+                        $ret = $this->consume($message_id, $json, $message->getProperties(), $message);
                     }
                     // 消费成功,删除
                     if ($ret) {
