@@ -113,21 +113,23 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
      * @param Pool $pool
      * @param int  $workerId
      */
-    public function workerStop(Pool $pool, int $workerId)
+    public function workerStart(Pool $pool, int $workerId)
     {
-        __LOG_MESSAGE("Worker#{$workerId} is stopped");
-        $this->output->writeln("Worker#{$workerId} is stopped");
+        $workerName = @cli_get_process_title() ?: $this->commandName;
+        @$pool->getProcess()->name("swoole $workerName #$workerId");
+        __LOG_MESSAGE("Worker#{$workerId} is started");
+        $this->output->writeln("Worker#{$workerId} is started");
+        $this->messageReceived($workerId);
     }
 
     /**
      * @param Pool $pool
      * @param int  $workerId
      */
-    public function workerStart(Pool $pool, int $workerId)
+    public function workerStop(Pool $pool, int $workerId)
     {
-        __LOG_MESSAGE("Worker#{$workerId} is started");
-        $this->output->writeln("Worker#{$workerId} is started");
-        $this->messageReceived($workerId);
+        __LOG_MESSAGE("Worker#{$workerId} is stopped");
+        $this->output->writeln("Worker#{$workerId} is stopped");
     }
 
     /**

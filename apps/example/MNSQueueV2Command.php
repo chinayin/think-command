@@ -14,7 +14,7 @@ final class MNSQueueV2Command extends ThinkMNSQueueV2Command
     protected $commandDescription = 'MNSQueueV2Command';
 
     /** @var int 进程数 */
-    protected $workerNum = 1;
+    protected $workerNum = 2;
     /** @var string 队列名称 */
     protected $queueName = 'test';
 
