@@ -1,0 +1,7 @@
+#!/usr/bin/env php
+<?php
+// 定义项目路径
+define('APP_PATH', __DIR__ . '/apps/');
+define('CONF_PATH', __DIR__ . '/apps/configs/');
+// 加载框架引导文件
+require __DIR__ . '/vendor/chinayin/thinkphp5/console.php';

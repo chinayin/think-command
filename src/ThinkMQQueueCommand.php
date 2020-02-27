@@ -9,47 +9,52 @@ use think\console\input\Option;
 use think\console\Output;
 
 /**
- * MqQueue.
+ * ThinkMQQueueCommand
  *
  * @author  lei.tian <whereismoney@qq.com>
  * @since   2020-02-18
  * @version 1.0
  */
-abstract class ThinkMqQueueCommand extends ThinkCommand
+abstract class ThinkMQQueueCommand extends ThinkCommand
 {
-    // 实例ID
+    /** @var string 实例ID */
     protected $instanceId;
-    // 组ID
+    /** @var string 组ID */
     protected $groupId;
-    // 主题名称
+    /** @var string 主题名称 */
     protected $topicName;
-    // 主题tag
+    /** @var string 主题tag */
     protected $messageTag;
-    // 重试到第N次消费,就删除
-    protected $maxConsumedTimes = 5;
-    // 轮训时间30秒
-    protected $waitSeconds = 30;
-    // 批次获取消息的数量 (默认是1条 暂时不支持设置多条)
-    protected $numOfReceiveMessages = 1;
-    // 数据格式 是否是  a=1&b=2格式
-    protected $queueMessageIsParseStr = false;
-    // 是否使用阿里云临时token方案
-    protected $useStsToken = false;
-    // 是否允许动态覆盖队列名称
-    protected $allowOverrideTopicName = false;
     // ----------
-    // 配置
+    /** @var int 重试到第N次消费,就删除 */
+    protected $maxConsumedTimes = 5;
+    /** @var int 轮询时间30秒 */
+    protected $waitSeconds = 30;
+    /** @var int 批次获取消息的数量 (默认是1条 暂时不支持设置多条) */
+    protected $numOfReceiveMessages = 1;
+    /** @var bool 数据格式 是否是  a=1&b=2格式 */
+    protected $queueMessageIsParseStr = false;
+    /** @var bool 是否允许动态覆盖队列名称 */
+    protected $allowOverrideTopicName = false;
+    /** @var bool 是否使用阿里云临时token方案 */
+    protected $useStsToken = false;
+    // ----------
+    /** @var 配置 */
     private $configs;
-    // 客户端
+    /** @var 客户端 */
     private $client;
-    // 消费者
+    /** @var 消费者 */
     private $consumer;
-    // 需要申请临时token的处理
+    /** @var 需要申请临时token的处理 */
     private $stsToken;
-    // 已收入的队列信息 (这里的信息会删除掉)
+    /** @var $receiptHandles */
     private $receiptHandles;
 
-    // 命令行参数配置
+    /**
+     * 命令行参数配置
+     *
+     * @return array|null
+     */
     protected function buildCommandDefinition()
     {
         return [
@@ -70,10 +75,12 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
     }
 
     /**
-     * 主函数.
+     * 主函数
      *
      * @param Input  $input
      * @param Output $output
+     *
+     * @throws \Exception
      */
     protected function main(Input $input, Output $output)
     {
@@ -125,6 +132,8 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
 
     /**
      * 接收消息
+     *
+     * @param int $workerId
      */
     private function messageReceived(int $workerId = 0)
     {
@@ -155,7 +164,7 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                     // 处理最大消费失败
                     if ($consumedTimes >= $this->maxConsumedTimes) {
                         $this->triggerMaxConsumedTimes($message);
-                        $res = $this->getMQConsumer()->ackMessage([$receiptHandle]);
+                        $rsp = $this->getMQConsumer()->ackMessage([$receiptHandle]);
                         $output->warning('MAX_CONSUMED_TIMES');
                         __LOG_MESSAGE('status = MAX_CONSUMED_TIMES', $message_id);
                         continue;
@@ -172,7 +181,7 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                     // 消费成功,删除
                     if ($ret) {
                         // ack
-                        $res = $this->getMQConsumer()->ackMessage([$receiptHandle]);
+                        $rsp = $this->getMQConsumer()->ackMessage([$receiptHandle]);
                         $output->writeln('OK');
                         __LOG_MESSAGE('status = OK', $message_id);
                     } else {
@@ -186,13 +195,10 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                 $output->error($e->getMessage());
                 exit;
             } catch (\MQ\Exception\MessageNotExistException $e) {
-                // 如果是没有消息 跳过不处理异常
-                if (404 == $e->getCode()) {
-                } else {
-                    __LOG_MESSAGE($e);
-                    $output->error($e->getMessage());
-                }
             } catch (\MQ\Exception\AckMessageException $e) {
+                __LOG_MESSAGE($e);
+                $output->error($e->getMessage());
+            } catch (\MQ\Exception\MQException $e) {
                 __LOG_MESSAGE($e);
                 $output->error($e->getMessage());
             } catch (\Exception $e) {
@@ -200,27 +206,6 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
                 $output->error($e->getMessage());
             }
         }
-    }
-
-    /**
-     * 获取消息的数组信息.
-     *
-     * @param $message
-     *
-     * @return array|mixed
-     */
-    protected function getMessageBodyJson($message)
-    {
-        $msg = $message->getMessageBody();
-        if ($this->queueMessageIsParseStr) {
-            $json = [];
-            parse_str($msg, $json);
-        } else {
-            $json = json_decode($msg, true);
-        }
-        unset($msg);
-
-        return $json;
     }
 
     /**
@@ -236,7 +221,25 @@ abstract class ThinkMqQueueCommand extends ThinkCommand
     abstract protected function consume(string $message_id, array $json, array $properties, $message);
 
     /**
-     * 处理重试错误次数过多.
+     * 获取消息的数组信息
+     *
+     * @param $message
+     *
+     * @return array|mixed
+     */
+    protected function getMessageBodyJson($message)
+    {
+        if ($this->queueMessageIsParseStr) {
+            $json = [];
+            parse_str($message->getMessageBody(), $json);
+        } else {
+            $json = json_decode($message->getMessageBody(), true);
+        }
+        return $json;
+    }
+
+    /**
+     * 处理重试错误次数过多
      *
      * @param mixed $message
      */

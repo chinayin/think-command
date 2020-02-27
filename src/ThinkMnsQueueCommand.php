@@ -17,7 +17,7 @@ use think\console\Output;
  *
  * @author  lei.tian <whereismoney@qq.com>
  * @since   2018-06-06
- * @version 2.0
+ * @version 1.0
  */
 abstract class ThinkMnsQueueCommand extends ThinkCommand
 {
