@@ -3,7 +3,6 @@
 namespace think\command;
 
 use AliyunMNS\Client as MnsClient;
-use Swoole\Process\Pool;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
@@ -78,6 +77,8 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
      *
      * @param Input  $input
      * @param Output $output
+     *
+     * @throws \Exception
      */
     protected function main(Input $input, Output $output)
     {
@@ -96,37 +97,11 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
         }
         // 使用Swoole\Process\Pool
         if ($this->workerNum > 1) {
-            $pool = new Pool($this->workerNum);
-            $pool->on("WorkerStart", [$this, 'workerStart']);
-            $pool->on("WorkerStop", [$this, 'workerStop']);
-            $pool->start();
+            $this->startSwoolePoolWorkers();
         } else {
             // 单进程
-            $this->messageReceived();
+            $this->poolWorkerCallback();
         }
-    }
-
-    /**
-     * @param Pool $pool
-     * @param int  $workerId
-     */
-    public function workerStart(Pool $pool, int $workerId)
-    {
-        $workerName = @cli_get_process_title() ?: $this->commandName;
-        @$pool->getProcess()->name("swoole $workerName #$workerId");
-        __LOG_MESSAGE("Worker#{$workerId} is started");
-        $this->output->writeln("Worker#{$workerId} is started");
-        $this->messageReceived($workerId);
-    }
-
-    /**
-     * @param Pool $pool
-     * @param int  $workerId
-     */
-    public function workerStop(Pool $pool, int $workerId)
-    {
-        __LOG_MESSAGE("Worker#{$workerId} is stopped");
-        $this->output->writeln("Worker#{$workerId} is stopped");
     }
 
     /**
@@ -134,7 +109,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
      *
      * @param int $workerId
      */
-    private function messageReceived(int $workerId = 0)
+    public function poolWorkerCallback(int $workerId = 0)
     {
         $output = $this->output;
         while (true) {
@@ -149,7 +124,6 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
                 }
                 $isBase64 = $response->isBase64();
                 $messages = $response->getMessages();
-                //__LOG_MESSAGE_DEBUG($messages, '$messages');
                 foreach ($messages as $message) {
                     $message_id = $message->getMessageId();
                     // 消费次数

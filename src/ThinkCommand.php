@@ -2,6 +2,7 @@
 
 namespace think\command;
 
+use Swoole\Process\Pool;
 use think\console\Command;
 use think\console\Input;
 use think\console\input\Option;
@@ -33,8 +34,10 @@ abstract class ThinkCommand extends Command
     private $errors = [];
     /** @var array 警告输出 */
     private $warns = [];
-    /**  @var int worker数(配合SwoolePool建议>0使用) */
+    /** @var int worker数(配合SwoolePool建议>0使用) */
     protected $workerNum = 0;
+    /** @var int pid */
+    private $pid = 0;
 
     protected function getSerialVersion()
     {
@@ -93,7 +96,7 @@ abstract class ThinkCommand extends Command
             Debug::getUseTime(1),
             Debug::getUseMem(1),
             Debug::getUsePeakMem(1),
-            getmypid()
+            $this->pid
         );
         $this->output->writeln($s);
         __LOG_MESSAGE(PHP_EOL . strip_tags($s));
@@ -130,6 +133,7 @@ abstract class ThinkCommand extends Command
         $this->setName($this->commandName)->setDescription($this->commandDescription);
         $this->serialId = uniqid();
         $this->serialVersion = str_replace(':', '-', $this->getName()) . '-' . $this->serialId;
+        $this->pid = getmypid();
         $defaultDefinition = [
             new Option('debug', 'd', Option::VALUE_OPTIONAL, 'is debug mode?', false),
             new Option('force', 'f', Option::VALUE_OPTIONAL, 'is force mode?', false),
@@ -180,7 +184,61 @@ abstract class ThinkCommand extends Command
     abstract protected function main(Input $input, Output $output);
 
     /**
-     * 测试输出内容.
+     * swoole pool 工作进程
+     *
+     * @param int $workerId
+     */
+    protected function poolWorkerCallback(int $workerId = 0)
+    {
+        throw new \Exception('function poolWorkerCallback must override');
+    }
+
+    /**
+     * 启动swoole pool
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    protected function startSwoolePoolWorkers()
+    {
+        if (empty($this->workerNum) || !is_integer($this->workerNum)) {
+            throw new \Exception('workerNum must integer');
+        }
+        $pool = new Pool($this->workerNum);
+        $pool->on("WorkerStart", [$this, 'poolWorkerStart']);
+        $pool->on("WorkerStop", [$this, 'poolWorkerStop']);
+        return $pool->start();
+    }
+
+    /**
+     * @param Pool $pool
+     * @param int  $workerId
+     *
+     * @throws \Exception
+     */
+    public function poolWorkerStart(Pool $pool, int $workerId)
+    {
+        $workerName = @cli_get_process_title() ?: $this->commandName;
+        @$pool->getProcess()->name("swoole $workerName {$this->pid}#$workerId");
+        __LOG_MESSAGE("Worker#$workerId is started");
+        $this->output->writeln("Worker#$workerId is started");
+        //
+        $this->poolWorkerCallback($workerId);
+    }
+
+    /**
+     * @param Pool $pool
+     * @param int  $workerId
+     */
+    public function poolWorkerStop(Pool $pool, int $workerId)
+    {
+        __LOG_MESSAGE("Worker#$workerId is stopped");
+        $this->output->writeln("Worker#$workerId is stopped");
+    }
+
+    /**
+     * 测试输出内容
+     * @param Output $output
      */
     protected function testOutputStyles(Output $output)
     {
