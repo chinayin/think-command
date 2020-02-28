@@ -295,9 +295,9 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     protected function getConfigs()
     {
         if (null === $this->configs) {
-            $this->configs = config('mns');
+            $this->configs = config('acm.mns');
             if (empty($this->configs)) {
-                throw new \Exception('config[mns] not found.');
+                throw new \Exception('config[acm.mns] not found.');
             }
         }
 

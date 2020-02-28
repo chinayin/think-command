@@ -312,9 +312,9 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     protected function getConfigs()
     {
         if (null === $this->configs) {
-            $this->configs = config('mq');
+            $this->configs = config('acm.mq');
             if (empty($this->configs)) {
-                throw new \Exception('config[mq] not found . ');
+                throw new \Exception('config[acm.mq] not found . ');
             }
         }
 
