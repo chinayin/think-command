@@ -260,10 +260,10 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
                 // 申请临时token
                 $this->stsToken = $this->queryTokenForMnsQueue();
                 $this->client = new MnsClient(
-                    $this->mnsStsToken['EndPoint'] ?? '',
-                    $this->mnsStsToken['AccessKeyId'] ?? '',
-                    $this->mnsStsToken['AccessKeySecret'] ?? '',
-                    $this->mnsStsToken['SecurityToken'] ?? ''
+                    $this->stsToken['EndPoint'] ?? '',
+                    $this->stsToken['AccessKeyId'] ?? '',
+                    $this->stsToken['AccessKeySecret'] ?? '',
+                    $this->stsToken['SecurityToken'] ?? ''
                 );
             }
         }
