@@ -184,16 +184,6 @@ abstract class ThinkCommand extends Command
     abstract protected function main(Input $input, Output $output);
 
     /**
-     * swoole pool 工作进程
-     *
-     * @param int $workerId
-     */
-    protected function poolWorkerCallback(int $workerId = 0)
-    {
-        throw new \Exception('function poolWorkerCallback must override');
-    }
-
-    /**
      * 启动swoole pool
      *
      * @return bool
@@ -205,9 +195,21 @@ abstract class ThinkCommand extends Command
             throw new \Exception('workerNum must integer');
         }
         $pool = new Pool($this->workerNum);
-        $pool->on("WorkerStart", [$this, 'poolWorkerStart']);
-        $pool->on("WorkerStop", [$this, 'poolWorkerStop']);
+        $pool->on("WorkerStart", [$this, 'onWorkerStart']);
+        $pool->on("WorkerStop", [$this, 'onWorkerStop']);
         return $pool->start();
+    }
+
+    /**
+     * swoole pool 工作进程
+     *
+     * @param int $workerId
+     *
+     * @throws \Exception
+     */
+    protected function onWorkerCallback(int $workerId = 0)
+    {
+        throw new \Exception('function onWorkerCallback must override');
     }
 
     /**
@@ -216,21 +218,24 @@ abstract class ThinkCommand extends Command
      *
      * @throws \Exception
      */
-    public function poolWorkerStart(Pool $pool, int $workerId)
+    public function onWorkerStart(Pool $pool, int $workerId)
     {
-        $workerName = @cli_get_process_title() ?: $this->commandName;
-        @$pool->getProcess()->name("swoole $workerName {$this->pid}#$workerId");
+        //mac os不支持进程重命名
+        if (PHP_OS !== 'Darwin') {
+            $workerName = @cli_get_process_title() ?: $this->commandName;
+            @$pool->getProcess()->name("swoole $workerName {$this->pid}#$workerId");
+        }
         __LOG_MESSAGE("Worker#$workerId is started");
         $this->output->writeln("Worker#$workerId is started");
         //
-        $this->poolWorkerCallback($workerId);
+        $this->onWorkerCallback($workerId);
     }
 
     /**
      * @param Pool $pool
      * @param int  $workerId
      */
-    public function poolWorkerStop(Pool $pool, int $workerId)
+    public function onWorkerStop(Pool $pool, int $workerId)
     {
         __LOG_MESSAGE("Worker#$workerId is stopped");
         $this->output->writeln("Worker#$workerId is stopped");
@@ -238,6 +243,7 @@ abstract class ThinkCommand extends Command
 
     /**
      * 测试输出内容
+     *
      * @param Output $output
      */
     protected function testOutputStyles(Output $output)

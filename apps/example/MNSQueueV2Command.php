@@ -21,7 +21,7 @@ final class MNSQueueV2Command extends ThinkMNSQueueV2Command
     protected function consume(string $message_id, array $json, $message)
     {
         try {
-            __LOG_MESSAGE('consume', $message_id);
+            __LOG_MESSAGE($message_id, 'consume');
             $this->isDebugMode() && __LOG_MESSAGE($json, $message_id);
             return true;
         } catch (\Exception $e) {

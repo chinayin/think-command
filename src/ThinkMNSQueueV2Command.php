@@ -100,7 +100,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
             $this->startSwoolePoolWorkers();
         } else {
             // 单进程
-            $this->poolWorkerCallback();
+            $this->onWorkerCallback();
         }
     }
 
@@ -109,7 +109,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
      *
      * @param int $workerId
      */
-    public function poolWorkerCallback(int $workerId = 0)
+    public function onWorkerCallback(int $workerId = 0)
     {
         $output = $this->output;
         while (true) {
