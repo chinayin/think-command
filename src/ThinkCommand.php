@@ -14,7 +14,7 @@ use think\Debug;
  *
  * @author  lei.tian <whereismoney@qq.com>
  * @since   2018-06-06
- * @version 2.0
+ * @version 2.1
  */
 abstract class ThinkCommand extends Command
 {
@@ -25,7 +25,7 @@ abstract class ThinkCommand extends Command
     /** @var bool 是否debug模式 */
     protected $isDebug = false;
     /** @var bool 是否force */
-    protected $isForce = false;
+    private $isForce = false;
     /** @var string 唯一序列 */
     private $serialId;
     /** @var string 启动版本 */
@@ -71,6 +71,11 @@ abstract class ThinkCommand extends Command
                 \think\Config::get('app_status'),
                 (IS_PRODUCTION ? '(PROD)' : '')
             ),
+            sprintf(
+                'Region: <info>%s</info> <highlight>%s</highlight>',
+                !empty(DEPLOY_REGION_ID) ? DEPLOY_REGION_ID : 'unknow',
+                (DEPLOY_IS_ABROAD_ZONE ? '(Abroad)' : '')
+            ),
             sprintf('SerialVersion: <info>%s</info>', $this->getSerialVersion()),
             sprintf(
                 'Options: debug => <info>%s</info>, force => <info>%s</info>',
@@ -103,7 +108,9 @@ abstract class ThinkCommand extends Command
         unset($s);
     }
 
-    /** 设置日志保存路径 */
+    /**
+     * 设置日志保存路径
+     */
     protected function setLogPath()
     {
         $log_path = LOG_PATH . str_replace(':', DS, $this->commandName) . DS;
@@ -111,7 +118,11 @@ abstract class ThinkCommand extends Command
         \think\Log::write($log_path);
     }
 
-    /** 解析option */
+    /**
+     * 解析option
+     *
+     * @param Input $input
+     */
     protected function setOptions(Input $input)
     {
         if (true === $input->hasParameterOption(['--debug'])) {
@@ -126,7 +137,9 @@ abstract class ThinkCommand extends Command
         }
     }
 
-    /** 配置 */
+    /**
+     * 配置
+     */
     protected function configure()
     {
         parent::configure();
@@ -148,7 +161,14 @@ abstract class ThinkCommand extends Command
         $this->setCommandDefinition();
     }
 
-    /** 任务运行 */
+    /**
+     * 任务运行
+     *
+     * @param Input  $input
+     * @param Output $output
+     *
+     * @return int|null
+     */
     protected function execute(Input $input, Output $output)
     {
         // 设置日志路径
@@ -157,8 +177,12 @@ abstract class ThinkCommand extends Command
         $this->setOptions($input);
         // 打印任务头
         $this->printSerialVersion();
+        // main之前
+        $this->onMainBeforeCallback($input, $output);
         // 主函数
         $statusCode = $this->main($input, $output);
+        // main之后
+        $this->onMainAfterCallback($input, $output);
         // 输出错误信息
         ($statusCode !== true && $statusCode !== 0) && $this->handleErrorWarn();
         // done
@@ -166,7 +190,27 @@ abstract class ThinkCommand extends Command
         return $statusCode;
     }
 
-    /** 命令行参数配置 */
+    /**
+     * 任务执行前
+     *
+     * @param Input  $input
+     * @param Output $output
+     */
+    protected function onMainBeforeCallback(Input $input, Output $output) { }
+
+    /**
+     * 任务执行后
+     *
+     * @param Input  $input
+     * @param Output $output
+     */
+    protected function onMainAfterCallback(Input $input, Output $output) { }
+
+    /**
+     * 命令行参数配置(待废弃)
+     *
+     * @deprecated
+     */
     protected function setCommandDefinition() { }
 
     /**
@@ -175,12 +219,17 @@ abstract class ThinkCommand extends Command
      * new Argument('namespace', InputArgument::OPTIONAL, 'The namespace name'),
      * new Option('raw', null, InputOption::VALUE_NONE, 'To output raw command list')
      * ];
-     *
-     * @return null|array
      */
     protected function buildCommandDefinition() { }
 
-    /** 执行命令主函数 */
+    /**
+     * 执行命令主函数
+     *
+     * @param Input  $input
+     * @param Output $output
+     *
+     * @return mixed
+     */
     abstract protected function main(Input $input, Output $output);
 
     /**
@@ -209,7 +258,7 @@ abstract class ThinkCommand extends Command
      */
     protected function onWorkerCallback(int $workerId = 0)
     {
-        throw new \Exception('function onWorkerCallback must override');
+        throw new \LogicException('You must override the onWorkerCallback() method in the concrete command class.');
     }
 
     /**
