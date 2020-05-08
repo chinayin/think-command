@@ -23,5 +23,16 @@
     "psr-4": {
       "think\\command\\": "src"
     }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit",
+    "test-ci": "vendor/bin/phpunit --coverage-text",
+    "phploc": "vendor/bin/phploc --exclude=vendor --exclude=tests ./",
+    "phpcpd": "vendor/bin/phpcpd --exclude=vendor --exclude=tests ./",
+    "phpstan": "vendor/bin/phpstan analyse",
+    "travis": [
+      "composer phploc",
+      "composer phpstan"
+    ]
   }
 }

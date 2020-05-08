@@ -1,0 +1,37 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Constant IS_PRODUCTION not found\\.$#"
+			count: 1
+			path: src/ThinkCommand.php
+
+		-
+			message: "#^Constant DEPLOY_REGION_ID not found\\.$#"
+			count: 2
+			path: src/ThinkCommand.php
+
+		-
+			message: "#^Constant DEPLOY_IS_ABROAD_ZONE not found\\.$#"
+			count: 1
+			path: src/ThinkCommand.php
+
+		-
+			message: "#^Constant LOG_PATH not found\\.$#"
+			count: 1
+			path: src/ThinkCommand.php
+
+		-
+			message: "#^Else branch is unreachable because ternary operator condition is always true\\.$#"
+			count: 2
+			path: src/ThinkCommand.php
+
+		-
+			message: "#^Argument of an invalid type MQ\\\\Model\\\\Message supplied for foreach, only iterables are supported\\.$#"
+			count: 1
+			path: src/ThinkMQQueueCommand.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: src/ThinkMnsQueueCommand.php
+

@@ -3,6 +3,7 @@
 namespace think\command;
 
 use Swoole\Process\Pool;
+use think\Config;
 use think\console\Command;
 use think\console\Input;
 use think\console\input\Option;
@@ -114,7 +115,7 @@ abstract class ThinkCommand extends Command
     protected function setLogPath()
     {
         $log_path = LOG_PATH . str_replace(':', DS, $this->commandName) . DS;
-        config('log.path', $log_path);
+        Config::set('log.path', $log_path);
         \think\Log::write($log_path);
     }
 
@@ -337,7 +338,7 @@ abstract class ThinkCommand extends Command
      */
     protected function addError($msg, $key = null)
     {
-        $this->errors[] = (null === $key ? '' : ('$key = ' . $key . ', ')) . $msg;
+        $this->errors[] = (null === $key ? '' : "key = {$key}, ") . $msg;
     }
 
     protected function getErrors()
@@ -367,7 +368,7 @@ abstract class ThinkCommand extends Command
      */
     protected function addWarn($msg, $key = null)
     {
-        $this->warns[] = (null === $key ? '' : ('$key = ' . $key . ', ')) . $msg;
+        $this->warns[] = (null === $key ? '' : "key = {$key}, ") . $msg;
     }
 
     protected function getWarns()

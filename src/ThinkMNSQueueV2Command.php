@@ -3,6 +3,7 @@
 namespace think\command;
 
 use AliyunMNS\Client as MnsClient;
+use think\Config;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
@@ -36,13 +37,13 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     /** @var bool 是否使用阿里云临时token方案 */
     protected $useStsToken = false;
     // ----------
-    /** @var 配置 */
+    /** @var mixed 配置 */
     private $configs;
-    /** @var 客户端 */
+    /** @var mixed 客户端 */
     private $client;
-    /** @var 需要申请临时token的处理 */
+    /** @var mixed 需要申请临时token的处理 */
     private $stsToken;
-    /** @var $receiptHandles */
+    /** @var mixed $receiptHandles */
     private $receiptHandles;
 
     /**
@@ -67,9 +68,9 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
             return;
         }
         $queueName = $this->input->getOption('queue');
-        empty($queueName) || $this->setQueueName($queueName);
+        empty($queueName) or $this->setQueueName($queueName);
         $topicName = $this->input->getOption('topic');
-        empty($topicName) || $this->setTopicName($topicName);
+        empty($topicName) or $this->setTopicName($topicName);
     }
 
     /**
@@ -295,7 +296,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     protected function getConfigs()
     {
         if (null === $this->configs) {
-            $this->configs = config('ram.mns');
+            $this->configs = Config::get('ram.mns');
             if (empty($this->configs)) {
                 throw new \Exception('config[ram.mns] not found.');
             }
@@ -321,7 +322,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     }
 
     /**
-     * @param mixed $queueName
+     * @param string $queueName
      */
     public function setQueueName(string $queueName): void
     {
@@ -337,7 +338,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     }
 
     /**
-     * @param mixed $topicName
+     * @param string $topicName
      */
     public function setTopicName(string $topicName): void
     {

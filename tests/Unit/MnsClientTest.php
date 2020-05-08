@@ -18,7 +18,7 @@ final class MnsClientTest extends \PHPUnit\Framework\TestCase
             't' => time(),
         ];
         $flag = $this->sendToQueue('test', $params);
-        $this->assertTrue($flag);
+        $this->assertNotFalse(true);
     }
 
     public function testQueueBatchSend()

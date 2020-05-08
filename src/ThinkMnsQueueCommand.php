@@ -8,6 +8,7 @@ namespace think\command;
 //use AlibabaCloud\Dybaseapi\MNS\Requests\BatchReceiveMessage;
 use AliyunMNS\Client as MnsClient;
 use AliyunMNS\Exception\MnsException;
+use think\Config;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
@@ -52,7 +53,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     protected function getMnsConfigs()
     {
         if (null === $this->mnsConfigs) {
-            $this->mnsConfigs = config('mns');
+            $this->mnsConfigs = Config::get('mns');
             if (empty($this->mnsConfigs)) {
                 throw new \Exception('config[mns] not found.');
             }
@@ -75,7 +76,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     }
 
     /**
-     * @param mixed $queueName
+     * @param string $queueName
      */
     public function setQueueName(string $queueName): void
     {
@@ -91,7 +92,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     }
 
     /**
-     * @param mixed $topicName
+     * @param string $topicName
      */
     public function setTopicName(string $topicName): void
     {
@@ -107,9 +108,9 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
             return;
         }
         $queueName = $this->input->getOption('queue');
-        empty($queueName) || $this->setQueueName($queueName);
+        empty($queueName) or $this->setQueueName($queueName);
         $topicName = $this->input->getOption('topic');
-        empty($topicName) || $this->setTopicName($topicName);
+        empty($topicName) or $this->setTopicName($topicName);
     }
 
     // 获取mnsClient
@@ -293,7 +294,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     /**
      * 处理重试错误次数过多.
      *
-     * @param mixed $message
+     * @param array $message
      */
     protected function handleMaxDequeue(array $message)
     {
@@ -319,7 +320,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     /**
      * 获取消息的数组信息.
      *
-     * @param $message
+     * @param array $message
      *
      * @return array|mixed
      */

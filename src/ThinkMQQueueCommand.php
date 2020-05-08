@@ -3,6 +3,7 @@
 namespace think\command;
 
 use MQ\MQClient;
+use think\Config;
 use think\console\Input;
 use think\console\input\Option;
 use think\console\Output;
@@ -38,15 +39,15 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     /** @var bool 是否使用阿里云临时token方案 */
     protected $useStsToken = false;
     // ----------
-    /** @var 配置 */
+    /** @var mixed 配置 */
     private $configs;
-    /** @var 客户端 */
+    /** @var mixed 客户端 */
     private $client;
-    /** @var 消费者 */
+    /** @var mixed 消费者 */
     private $consumer;
-    /** @var 需要申请临时token的处理 */
+    /** @var mixed 需要申请临时token的处理 */
     private $stsToken;
-    /** @var $receiptHandles */
+    /** @var mixed $receiptHandles */
     private $receiptHandles;
 
     /**
@@ -70,7 +71,7 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
             return;
         }
         $topicName = $this->input->getOption('topic');
-        empty($topicName) || $this->setTopicName($topicName);
+        empty($topicName) or $this->setTopicName($topicName);
     }
 
     /**
@@ -312,7 +313,7 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     protected function getConfigs()
     {
         if (null === $this->configs) {
-            $this->configs = config('ram.mq');
+            $this->configs = Config::get('ram.mq');
             if (empty($this->configs)) {
                 throw new \Exception('config[ram.mq] not found . ');
             }
@@ -327,6 +328,14 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     public function getTopicName()
     {
         return $this->topicName;
+    }
+
+    /**
+     * @param string $topicName
+     */
+    public function setTopicName(string $topicName): void
+    {
+        $this->topicName = $topicName;
     }
 
     /**
