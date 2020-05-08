@@ -24,6 +24,7 @@ final class MnsClientTest extends \PHPUnit\Framework\TestCase
     public function testQueueBatchSend()
     {
         for ($i = 0; $i <= 100; $i++) {
+
             $params = [
                 'i' => $i,
                 't' => microtime(true),
