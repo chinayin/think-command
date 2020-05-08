@@ -19,7 +19,8 @@ jobs:
 #      env: deps=low
 
 before_install:
-  - pecl install swoole
+  - echo "extension = swoole.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  #- pecl install swoole --ignore-errors
 
 install:
   - if [ "$deps" == "low" ]; then travis_retry composer update --prefer-dist --prefer-lowest --prefer-stable; fi
