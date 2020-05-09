@@ -1,5 +1,14 @@
 {
   "name": "chinayin/think-command",
+  "description": "thinkphp command library",
+  "type": "library",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "chinayin",
+      "email": "whereismoney@qq.com"
+    }
+  ],
   "require": {
     "chinayin/thinkphp5": "~5.0",
     "aliyunmq/mq-http-sdk": "^1.0",
@@ -12,16 +21,20 @@
     "sebastian/phpcpd": "^4.0",
     "phpstan/phpstan": "^0.12"
   },
-  "license": "Apache-2.0",
-  "authors": [
-    {
-      "name": "chinayin",
-      "email": "whereismoney@qq.com"
-    }
-  ],
   "autoload": {
     "psr-4": {
       "think\\command\\": "src"
+    }
+  },
+  "config": {
+    "preferred-install": "dist",
+    "optimize-autoloader": true
+  },
+  "prefer-stable": true,
+  "minimum-stability": "dev",
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.1-dev"
     }
   },
   "scripts": {
