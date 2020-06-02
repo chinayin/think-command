@@ -23,7 +23,7 @@ jobs:
       with:
         php-version: ${{ matrix.php-versions }}
         tools: pecl
-        extensions: swoole
+        extensions: mbstring, dom, swoole
 
     - name: Get composer cache directory
       id: composer-cache
