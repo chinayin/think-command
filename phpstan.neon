@@ -10,8 +10,6 @@ parameters:
     inferPrivatePropertyTypeFromConstructor: true
     paths:
         - src
-    autoload_files:
-        - vendor/autoload.php
     excludes_analyse:
         - src/AdapterTest/
     ignoreErrors:
