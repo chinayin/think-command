@@ -132,8 +132,9 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
                     $output->write("#$workerId MessageId $s");
                     __LOG_MESSAGE($s, "#$workerId MessageId");
                     unset($s);
-                    // 验证消息md5
-                    if (strtoupper(md5($message->getMessageBody())) !== $message->getMessageBodyMD5()) {
+                    // 验证消息md5(tcp端发来的不会有md5)
+                    if (!empty($message->getMessageBodyMD5()) &&
+                        strtoupper(md5($message->getMessageBody())) !== $message->getMessageBodyMD5()) {
                         throw new \Exception('MessageBodyMD5_NOT_MATCH');
                     }
                     $receiptHandle = $message->getReceiptHandle();
