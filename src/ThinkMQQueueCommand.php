@@ -77,7 +77,7 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     /**
      * 主函数
      *
-     * @param Input  $input
+     * @param Input $input
      * @param Output $output
      *
      * @throws \Exception
@@ -153,7 +153,7 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
                         $ret = true;
                     } else {
                         // 消费
-                        $ret = $this->consume($message_id, $json, $message->getProperties() ?? [], $message);
+                        $ret = $this->consume($message_id, $json, $message->getProperties() ?? [], $message, $workerId);
                     }
                     // 消费成功,删除
                     if ($ret) {
@@ -192,10 +192,17 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
      * @param array  $json
      * @param array  $properties
      * @param        $message
+     * @param int    $workerId
      *
      * @return mixed
      */
-    abstract protected function consume(string $message_id, array $json, array $properties, $message);
+    abstract protected function consume(
+        string $message_id,
+        array $json,
+        array $properties,
+        $message,
+        int $workerId = 0
+    );
 
     /**
      * 获取消息的数组信息

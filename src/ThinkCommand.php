@@ -2,6 +2,7 @@
 
 namespace think\command;
 
+use Godruoyi\Snowflake\Snowflake;
 use Swoole\Process\Pool;
 use think\Config;
 use think\console\Command;
@@ -244,6 +245,12 @@ abstract class ThinkCommand extends Command
         if (empty($this->workerNum) || !is_integer($this->workerNum)) {
             throw new \Exception('workerNum must integer');
         }
+        if ($this->workerNum < 2) {
+            throw new \Exception('workerNum must greater than 1');
+        }
+        //
+        $this->initializeSnowflake();
+        //
         $pool = new Pool($this->workerNum);
         $pool->on("WorkerStart", [$this, 'onWorkerStart']);
         $pool->on("WorkerStop", [$this, 'onWorkerStop']);
@@ -394,5 +401,29 @@ abstract class ThinkCommand extends Command
     {
         $this->printErrorsMessage();
         $this->printWarnsMessage();
+    }
+
+    private $snowflakes = [];
+
+    private function initializeSnowflake()
+    {
+        if ($this->workerNum <= 0) {
+            return;
+        }
+        for ($i = 0; $i < $this->workerNum; $i++) {
+            $datacenter = (int)($i / 32);
+            $workerid = $i % 32;
+            $this->snowflakes[$i] = new Snowflake($datacenter, $workerid);
+        }
+    }
+
+    /**
+     * @param int $workerId
+     *
+     * @return Snowflake
+     */
+    protected function snowflake(int $workerId = 0): Snowflake
+    {
+        return $this->snowflakes[$workerId];
     }
 }

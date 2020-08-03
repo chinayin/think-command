@@ -156,7 +156,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
                         $ret = true;
                     } else {
                         // 消费
-                        $ret = $this->consume($message_id, $json, $message);
+                        $ret = $this->consume($message_id, $json, $message, $workerId);
                     }
                     // 消费成功,删除
                     if ($ret) {
@@ -191,10 +191,11 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
      * @param string $message_id
      * @param array  $json
      * @param        $message
+     * @param int    $workerId
      *
      * @return mixed
      */
-    abstract protected function consume(string $message_id, array $json, $message);
+    abstract protected function consume(string $message_id, array $json, $message, int $workerId = 0);
 
     /**
      * 获取消息的数组信息
