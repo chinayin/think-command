@@ -10,7 +10,7 @@
     }
   ],
   "require": {
-    "chinayin/thinkphp5": "^5.0",
+    "chinayin/thinkphp5": "~5.0",
     "aliyunmq/mq-http-sdk": "^1.0",
     "aliyun/aliyun-mns-php-sdk": "^1.1",
     "godruoyi/php-snowflake": "^1.0"
