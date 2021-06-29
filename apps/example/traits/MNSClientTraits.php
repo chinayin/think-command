@@ -12,7 +12,7 @@ trait MNSClientTraits
     private function getMnsClient()
     {
         if (null === $this->mnsClient) {
-            $configs = config('mns');
+            $configs = config('ram.mns');
             $this->mnsClient = new MnsClient(
                 $configs['end_point'] ?? '',
                 $configs['access_key_id'] ?? '',
