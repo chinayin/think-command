@@ -135,7 +135,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
                 // 不存在临时token
                 null === $this->mnsStsToken ||
                 // 临时token 过期时间距离现在不足2分钟就重新申请新的
-                ((strtotime($this->mnsStsToken['ExpireTime']) - time()) <= 2 * 60)
+                $this->isStsTokenExpired()
             ) {
                 // 申请临时token
                 $this->mnsStsToken = $this->queryTokenForMnsQueue();
@@ -347,6 +347,16 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
      * @param mixed $message_id
      */
     abstract protected function handle(array $json, $message_id);
+
+    /**
+     * 判断sts token是否过期
+     * @return bool
+     */
+    private function isStsTokenExpired()
+    {
+        $exp = $this->stsToken['ExpireTime'] ?? '';
+        return empty($exp) ? true : ((strtotime($exp) - time()) <= 2 * 60);
+    }
 
     /**
      * 申请mns临时token.
