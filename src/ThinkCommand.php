@@ -157,7 +157,7 @@ abstract class ThinkCommand extends Command
         ];
         $definitions = array_merge(
             $defaultDefinition,
-            (is_array($this->buildCommandDefinition()) ? $this->buildCommandDefinition() : [])
+            $this->buildCommandDefinition()
         );
         // 命令行参数配置(数组)
         $this->setDefinition($definitions);
@@ -231,8 +231,9 @@ abstract class ThinkCommand extends Command
      * new Option('raw', null, InputOption::VALUE_NONE, 'To output raw command list')
      * ];
      */
-    protected function buildCommandDefinition()
+    protected function buildCommandDefinition(): array
     {
+        return [];
     }
 
     /**

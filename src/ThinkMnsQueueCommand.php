@@ -148,7 +148,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     }
 
     // 命令行参数配置
-    protected function buildCommandDefinition()
+    protected function buildCommandDefinition(): array
     {
         return [
             new Option('queue', null, Option::VALUE_OPTIONAL, 'Override queue name'),
@@ -208,7 +208,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
                 //{"Message":{"MessageId":"D7442E19B016DDE8-1-1696C61618D-200000001","MessageBodyMD5":"9E6A284D2F2B0CFF6F70B5C69ADBE253","MessageBody":"eyJtb2RlbCI6ImFjY291bnQiLCJpZCI6MTIzfQ==","ReceiptHandle":"1-ODU4OTkzNDU5My0xNTUyMzAyMDMzLTEtOA==","EnqueueTime":"1552301515149","FirstDequeueTime":"1552301532389","NextVisibleTime":"1552302033000","DequeueCount":"7","Priority":"8"}}
                 // 判断过来的数据是否二维数组
                 $messages = ($mnsResponse && isset($mnsResponse['Message'])) ? (
-                count($mnsResponse['Message']) === count($mnsResponse['Message'], 1) ?
+                    count($mnsResponse['Message']) === count($mnsResponse['Message'], 1) ?
                     [$mnsResponse['Message']] : $mnsResponse['Message']
                 ) : [];
 //                __LOG_MESSAGE_DEBUG($messages, '$messages');

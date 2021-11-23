@@ -19,7 +19,7 @@ final class Command extends ThinkCommand
     protected $commandDescription = 'command';
 
     // 命令行参数配置
-    protected function buildCommandDefinition()
+    protected function buildCommandDefinition(): array
     {
         return [
             new Argument('value', Argument::REQUIRED, 'value'),

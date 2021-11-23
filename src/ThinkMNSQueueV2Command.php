@@ -49,9 +49,9 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     /**
      * 命令行参数配置
      *
-     * @return array|null
+     * @return array
      */
-    protected function buildCommandDefinition(): ?array
+    protected function buildCommandDefinition(): array
     {
         return [
             new Option('queue', null, Option::VALUE_OPTIONAL, 'Override queue name'),
