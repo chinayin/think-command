@@ -75,7 +75,7 @@ abstract class ThinkCommand extends Command
             ),
             sprintf(
                 'Region: <info>%s</info> <highlight>%s</highlight>',
-                !empty(DEPLOY_REGION_ID) ? DEPLOY_REGION_ID : 'unknow',
+                !empty(DEPLOY_REGION_ID) ? DEPLOY_REGION_ID : 'unknown',
                 (DEPLOY_IS_ABROAD_ZONE ? '(Abroad)' : '')
             ),
             sprintf('SerialVersion: <info>%s</info>', $this->getSerialVersion()),
