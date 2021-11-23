@@ -41,12 +41,12 @@ abstract class ThinkCommand extends Command
     /** @var int pid */
     private $pid = 0;
 
-    protected function getSerialVersion()
+    protected function getSerialVersion(): string
     {
         return $this->serialVersion;
     }
 
-    protected function getSerialId()
+    protected function getSerialId(): string
     {
         return $this->serialId;
     }
@@ -361,12 +361,12 @@ abstract class ThinkCommand extends Command
         $this->errors[] = (null === $key ? '' : "key = {$key}, ") . $msg;
     }
 
-    protected function getErrors()
+    protected function getErrors(): array
     {
         return $this->errors;
     }
 
-    protected function getErrorsString()
+    protected function getErrorsString(): string
     {
         return implode(PHP_EOL, $this->errors);
     }
@@ -391,12 +391,12 @@ abstract class ThinkCommand extends Command
         $this->warns[] = (null === $key ? '' : "key = {$key}, ") . $msg;
     }
 
-    protected function getWarns()
+    protected function getWarns(): array
     {
         return $this->warns;
     }
 
-    protected function getWarnsString()
+    protected function getWarnsString(): string
     {
         return implode(PHP_EOL, $this->warns);
     }
@@ -425,8 +425,8 @@ abstract class ThinkCommand extends Command
         }
         for ($i = 0; $i < $this->workerNum; $i++) {
             $datacenter = (int)($i / 32);
-            $workerid = $i % 32;
-            $this->snowflakes[$i] = new Snowflake($datacenter, $workerid);
+            $workerId = $i % 32;
+            $this->snowflakes[$i] = new Snowflake($datacenter, $workerId);
         }
     }
 
