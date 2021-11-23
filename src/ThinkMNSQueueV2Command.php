@@ -37,7 +37,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     /** @var bool 是否使用阿里云临时token方案 */
     protected $useStsToken = false;
     // ----------
-    /** @var mixed 配置 */
+    /** @var ?array 配置 */
     private $configs;
     /** @var mixed 客户端 */
     private $client;
@@ -51,7 +51,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
      *
      * @return array|null
      */
-    protected function buildCommandDefinition()
+    protected function buildCommandDefinition(): ?array
     {
         return [
             new Option('queue', null, Option::VALUE_OPTIONAL, 'Override queue name'),
@@ -76,7 +76,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     /**
      * 主函数
      *
-     * @param Input  $input
+     * @param Input $input
      * @param Output $output
      *
      * @throws \Exception
@@ -117,9 +117,12 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
             echo '.';
             try {
                 $queue = $this->getMnsClient()->getQueueRef($this->queueName, $this->queueMessageIsBase64);
-//                $rsp = $queue->receiveMessage($this->waitSeconds);
-                $response = $queue->batchReceiveMessage(new \AliyunMNS\Requests\BatchReceiveMessageRequest($this->numOfReceiveMessages,
-                    $this->waitSeconds));
+                $response = $queue->batchReceiveMessage(
+                    new \AliyunMNS\Requests\BatchReceiveMessageRequest(
+                        $this->numOfReceiveMessages,
+                        $this->waitSeconds
+                    )
+                );
                 if (!$response->isSucceed()) {
                     continue;
                 }
@@ -134,9 +137,11 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
                     __LOG_MESSAGE($s, "#$workerId MessageId");
                     unset($s);
                     // 验证消息md5
-                    $bodyMD5 = strtoupper(md5(
-                        ($isBase64 ? base64_encode($message->getMessageBody()) : $message->getMessageBody())
-                    ));
+                    $bodyMD5 = strtoupper(
+                        md5(
+                            ($isBase64 ? base64_encode($message->getMessageBody()) : $message->getMessageBody())
+                        )
+                    );
                     if ($bodyMD5 !== $message->getMessageBodyMD5()) {
                         throw new \Exception('MessageBodyMD5_NOT_MATCH');
                     }
@@ -189,9 +194,9 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
      * 消息消费
      *
      * @param string $message_id
-     * @param array  $json
+     * @param array $json
      * @param        $message
-     * @param int    $workerId
+     * @param int $workerId
      *
      * @return mixed
      */
@@ -223,10 +228,14 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     protected function triggerMaxConsumedTimes($message)
     {
         $json = $this->getMessageBodyJson($message);
-        __LOG_MESSAGE_ERROR($json, sprintf('triggerMaxConsumedTimes___%s___%s',
-            $message->getMessageId(),
-            $message->getDequeueCount()
-        ));
+        __LOG_MESSAGE_ERROR(
+            $json,
+            sprintf(
+                'triggerMaxConsumedTimes___%s___%s',
+                $message->getMessageId(),
+                $message->getDequeueCount()
+            )
+        );
         unset($json);
     }
 
@@ -236,7 +245,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
      * @return MnsClient
      * @throws \Exception
      */
-    protected function getMnsClient()
+    protected function getMnsClient(): MnsClient
     {
         // 非临时token的客户端
         if (!$this->useStsToken) {
@@ -276,7 +285,7 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
      * 判断sts token是否过期
      * @return bool
      */
-    private function isStsTokenExpired()
+    private function isStsTokenExpired(): bool
     {
         $exp = $this->stsToken['ExpireTime'] ?? '';
         return empty($exp) ? true : ((strtotime($exp) - time()) <= 2 * 60);
@@ -301,10 +310,10 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     /**
      * 获取配置
      *
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
-    protected function getConfigs()
+    protected function getConfigs(): array
     {
         if (null === $this->configs) {
             $this->configs = Config::get('ram.mns');
@@ -317,17 +326,17 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     }
 
     /**
-     * @param $configs
+     * @param array $configs
      */
-    protected function setConfigs($configs)
+    protected function setConfigs(array $configs)
     {
         $this->configs = $configs;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getQueueName()
+    public function getQueueName(): string
     {
         return $this->queueName;
     }
@@ -341,9 +350,9 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getTopicName()
+    public function getTopicName(): string
     {
         return $this->topicName;
     }
@@ -355,5 +364,4 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     {
         $this->topicName = $topicName;
     }
-
 }

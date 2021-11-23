@@ -39,7 +39,7 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     /** @var bool 是否使用阿里云临时token方案 */
     protected $useStsToken = false;
     // ----------
-    /** @var mixed 配置 */
+    /** @var array 配置 */
     private $configs;
     /** @var mixed 客户端 */
     private $client;
@@ -55,7 +55,7 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
      *
      * @return array|null
      */
-    protected function buildCommandDefinition()
+    protected function buildCommandDefinition(): ?array
     {
         return [
             new Option('topic', null, Option::VALUE_OPTIONAL, 'Override topic name'),
@@ -87,13 +87,15 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
         // 动态配置队列主题名称
         $this->dynamicOverrideTopicName();
         // 显示队列名称
-        foreach ([
-                     "WorkerNum: <info>{$this->workerNum}</info>",
-                     "InstanceId: <info>{$this->getInstanceId()}</info>",
-                     "GroupId: <info>{$this->getGroupId()}</info>",
-                     "Topic: <info>{$this->getTopicName()}</info>",
-                     "Tag: <info>{$this->getMessageTag()}</info>",
-                 ] as $s) {
+        foreach (
+            [
+                "WorkerNum: <info>{$this->workerNum}</info>",
+                "InstanceId: <info>{$this->getInstanceId()}</info>",
+                "GroupId: <info>{$this->getGroupId()}</info>",
+                "Topic: <info>{$this->getTopicName()}</info>",
+                "Tag: <info>{$this->getMessageTag()}</info>",
+            ] as $s
+        ) {
             $output->comment($s);
             __LOG_MESSAGE(strip_tags($s));
         }
@@ -189,10 +191,10 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
      * 消息消费
      *
      * @param string $message_id
-     * @param array  $json
-     * @param array  $properties
+     * @param array $json
+     * @param array $properties
      * @param        $message
-     * @param int    $workerId
+     * @param int $workerId
      *
      * @return mixed
      */
@@ -230,10 +232,14 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     protected function triggerMaxConsumedTimes($message)
     {
         $json = $this->getMessageBodyJson($message);
-        __LOG_MESSAGE_ERROR($json, sprintf('triggerMaxConsumedTimes___%s___%s',
-            $message->getMessageId(),
-            $message->getConsumedTimes()
-        ));
+        __LOG_MESSAGE_ERROR(
+            $json,
+            sprintf(
+                'triggerMaxConsumedTimes___%s___%s',
+                $message->getMessageId(),
+                $message->getConsumedTimes()
+            )
+        );
         unset($json);
     }
 
@@ -243,7 +249,7 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
      * @return MQClient
      * @throws \Exception
      */
-    protected function getMQClient()
+    protected function getMQClient(): MQClient
     {
         // 非临时token的客户端
         if (!$this->useStsToken) {
@@ -284,7 +290,7 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
      * @return \MQ\MQConsumer
      * @throws \Exception
      */
-    public function getMQConsumer()
+    public function getMQConsumer(): \MQ\MQConsumer
     {
         if (null === $this->consumer) {
             $instanceId = $this->getInstanceId();
@@ -300,7 +306,7 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
      * 判断sts token是否过期
      * @return bool
      */
-    private function isStsTokenExpired()
+    private function isStsTokenExpired(): bool
     {
         $exp = $this->stsToken['ExpireTime'] ?? '';
         return empty($exp) ? true : ((strtotime($exp) - time()) <= 2 * 60);
@@ -325,10 +331,10 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     /**
      * 获取配置
      *
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
-    protected function getConfigs()
+    protected function getConfigs(): array
     {
         if (null === $this->configs) {
             $this->configs = Config::get('ram.mq');
@@ -341,9 +347,9 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getTopicName()
+    public function getTopicName(): string
     {
         return $this->topicName;
     }
@@ -387,5 +393,4 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     {
         return $this->messageTag;
     }
-
 }

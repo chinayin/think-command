@@ -2,10 +2,6 @@
 
 namespace think\command;
 
-//use AlibabaCloud\Client\Exception\ServerException;
-//use AlibabaCloud\Dybaseapi\MNS\MnsClient;
-//use AlibabaCloud\Dybaseapi\MNS\Requests\BatchDeleteMessage;
-//use AlibabaCloud\Dybaseapi\MNS\Requests\BatchReceiveMessage;
 use AliyunMNS\Client as MnsClient;
 use AliyunMNS\Exception\MnsException;
 use think\Config;
@@ -163,7 +159,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     /**
      * 主函数.
      *
-     * @param Input  $input
+     * @param Input $input
      * @param Output $output
      */
     protected function main(Input $input, Output $output)
@@ -212,7 +208,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
                 //{"Message":{"MessageId":"D7442E19B016DDE8-1-1696C61618D-200000001","MessageBodyMD5":"9E6A284D2F2B0CFF6F70B5C69ADBE253","MessageBody":"eyJtb2RlbCI6ImFjY291bnQiLCJpZCI6MTIzfQ==","ReceiptHandle":"1-ODU4OTkzNDU5My0xNTUyMzAyMDMzLTEtOA==","EnqueueTime":"1552301515149","FirstDequeueTime":"1552301532389","NextVisibleTime":"1552302033000","DequeueCount":"7","Priority":"8"}}
                 // 判断过来的数据是否二维数组
                 $messages = ($mnsResponse && isset($mnsResponse['Message'])) ? (
-                count($mnsResponse['Message']) == count($mnsResponse['Message'], 1) ?
+                    count($mnsResponse['Message']) == count($mnsResponse['Message'], 1) ?
                     [$mnsResponse['Message']] : $mnsResponse['Message']
                 ) : [];
 //                __LOG_MESSAGE_DEBUG($messages, '$messages');
@@ -224,9 +220,11 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
                     // 对于未base64的消息 这里需要特殊处理 TODO
 //                    $bodyMD5 = strtoupper(md5($message['MessageBody']));
                     // 2019-03-27 这里的md5 在新老版本有差异 下面是先按照老版本的来
-                    $bodyMD5 = strtoupper(md5(
-                        ($this->mnsQueueIsBase64 ? base64_encode($message['MessageBody']) : $message['MessageBody'])
-                    ));
+                    $bodyMD5 = strtoupper(
+                        md5(
+                            ($this->mnsQueueIsBase64 ? base64_encode($message['MessageBody']) : $message['MessageBody'])
+                        )
+                    );
                     if ($bodyMD5 !== $message['MessageBodyMD5']) {
                         throw new \Exception('MessageBodyMD5_NOT_MATCH');
                     }
@@ -352,7 +350,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
      * 判断sts token是否过期
      * @return bool
      */
-    private function isStsTokenExpired()
+    private function isStsTokenExpired(): bool
     {
         $exp = $this->stsToken['ExpireTime'] ?? '';
         return empty($exp) ? true : ((strtotime($exp) - time()) <= 2 * 60);

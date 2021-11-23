@@ -10,8 +10,8 @@ jobs:
   fast_finish: true
   include:
     - php: 7.2
-    - php: 7.3
     - php: 7.4
+    - php: 8.0
 
 before_install:
   - yes '' | pecl install swoole

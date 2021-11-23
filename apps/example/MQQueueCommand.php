@@ -21,7 +21,7 @@ final class MQQueueCommand extends ThinkMQQueueCommand
     // 主题tag
     protected $messageTag = 'test2';
 
-    protected function consume(string $message_id, array $json, array $properties, $message)
+    protected function consume(string $message_id, array $json, array $properties, $message, int $workerId = 0)
     {
         try {
             __LOG_MESSAGE($message_id, 'consume');
@@ -32,5 +32,4 @@ final class MQQueueCommand extends ThinkMQQueueCommand
         }
         return false;
     }
-
 }

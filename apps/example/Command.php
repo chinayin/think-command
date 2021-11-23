@@ -14,7 +14,6 @@ use think\console\Output;
  */
 final class Command extends ThinkCommand
 {
-
     // 命令行配置
     protected $commandName = 'example:Command';
     protected $commandDescription = 'command';
@@ -47,5 +46,4 @@ final class Command extends ThinkCommand
         $this->addError('这是一条错误');
         return 0;
     }
-
 }

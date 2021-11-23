@@ -98,7 +98,8 @@ abstract class ThinkCommand extends Command
      */
     protected function printExecutionCompleted()
     {
-        $s = sprintf('done. { <info>%s</info>, seconds => <info>%s</info>, memory_get_usage => <info>%s</info>, memory_get_peak_usage => <info>%s</info>, pid => <info>%s</info> }',
+        $s = sprintf(
+            'done. { <info>%s</info>, seconds => <info>%s</info>, memory_get_usage => <info>%s</info>, memory_get_peak_usage => <info>%s</info>, pid => <info>%s</info> }',
             date('c'),
             Debug::getUseTime(1),
             Debug::getUseMem(1),
@@ -154,8 +155,10 @@ abstract class ThinkCommand extends Command
             new Option('force', 'f', Option::VALUE_OPTIONAL, 'is force mode?', false),
             new Option('thread', null, Option::VALUE_OPTIONAL, 'ThreadPool workerNum', 0),
         ];
-        $definitions = array_merge($defaultDefinition,
-            (is_array($this->buildCommandDefinition()) ? $this->buildCommandDefinition() : []));
+        $definitions = array_merge(
+            $defaultDefinition,
+            (is_array($this->buildCommandDefinition()) ? $this->buildCommandDefinition() : [])
+        );
         // 命令行参数配置(数组)
         $this->setDefinition($definitions);
         unset($definitions);
@@ -166,12 +169,12 @@ abstract class ThinkCommand extends Command
     /**
      * 任务运行
      *
-     * @param Input  $input
+     * @param Input $input
      * @param Output $output
      *
      * @return int|null
      */
-    protected function execute(Input $input, Output $output)
+    protected function execute(Input $input, Output $output): ?int
     {
         // 设置日志路径
         $this->setLogPath();
@@ -195,25 +198,31 @@ abstract class ThinkCommand extends Command
     /**
      * 任务执行前
      *
-     * @param Input  $input
+     * @param Input $input
      * @param Output $output
      */
-    protected function onMainBeforeCallback(Input $input, Output $output) { }
+    protected function onMainBeforeCallback(Input $input, Output $output)
+    {
+    }
 
     /**
      * 任务执行后
      *
-     * @param Input  $input
+     * @param Input $input
      * @param Output $output
      */
-    protected function onMainAfterCallback(Input $input, Output $output) { }
+    protected function onMainAfterCallback(Input $input, Output $output)
+    {
+    }
 
     /**
      * 命令行参数配置(待废弃)
      *
      * @deprecated
      */
-    protected function setCommandDefinition() { }
+    protected function setCommandDefinition()
+    {
+    }
 
     /**
      * 命令行参数配置(通过数组定义) -- 推荐使用
@@ -222,12 +231,14 @@ abstract class ThinkCommand extends Command
      * new Option('raw', null, InputOption::VALUE_NONE, 'To output raw command list')
      * ];
      */
-    protected function buildCommandDefinition() { }
+    protected function buildCommandDefinition()
+    {
+    }
 
     /**
      * 执行命令主函数
      *
-     * @param Input  $input
+     * @param Input $input
      * @param Output $output
      *
      * @return mixed
@@ -240,7 +251,7 @@ abstract class ThinkCommand extends Command
      * @return bool
      * @throws \Exception
      */
-    protected function startSwoolePoolWorkers()
+    protected function startSwoolePoolWorkers(): bool
     {
         if (empty($this->workerNum) || !is_integer($this->workerNum)) {
             throw new \Exception('workerNum must integer');
@@ -271,7 +282,7 @@ abstract class ThinkCommand extends Command
 
     /**
      * @param Pool $pool
-     * @param int  $workerId
+     * @param int $workerId
      *
      * @throws \Exception
      */
@@ -290,7 +301,7 @@ abstract class ThinkCommand extends Command
 
     /**
      * @param Pool $pool
-     * @param int  $workerId
+     * @param int $workerId
      */
     public function onWorkerStop(Pool $pool, int $workerId)
     {
@@ -305,14 +316,16 @@ abstract class ThinkCommand extends Command
      */
     protected function testOutputStyles(Output $output)
     {
-        foreach ([
-                     'info',
-                     'error',
-                     'comment',
-                     'question',
-                     'highlight',
-                     'warning',
-                 ] as $style) {
+        foreach (
+            [
+                'info',
+                'error',
+                'comment',
+                'question',
+                'highlight',
+                'warning',
+            ] as $style
+        ) {
             $output->{$style}($style);
         }
     }

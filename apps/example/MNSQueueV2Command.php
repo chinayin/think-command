@@ -18,7 +18,7 @@ final class MNSQueueV2Command extends ThinkMNSQueueV2Command
     /** @var string 队列名称 */
     protected $queueName = 'test';
 
-    protected function consume(string $message_id, array $json, $message)
+    protected function consume(string $message_id, array $json, $message, int $workerId = 0)
     {
         try {
             __LOG_MESSAGE($message_id, 'consume');
@@ -29,5 +29,4 @@ final class MNSQueueV2Command extends ThinkMNSQueueV2Command
         }
         return false;
     }
-
 }
