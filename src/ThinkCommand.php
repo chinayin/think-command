@@ -67,7 +67,7 @@ abstract class ThinkCommand extends Command
     protected function printSerialVersion()
     {
         $s = [
-            str_pad('', 50, '='),
+            str_pad('', 55, '='),
             sprintf(
                 'Env: <info>%s</info> <highlight>%s</highlight>',
                 \think\Config::get('app_status'),
@@ -80,12 +80,14 @@ abstract class ThinkCommand extends Command
             ),
             sprintf('SerialVersion: <info>%s</info>', $this->getSerialVersion()),
             sprintf(
-                'Options: debug => <info>%s</info>, force => <info>%s</info>',
+                'Options: debug => <info>%s</info>, force => <info>%s</info>%s',
                 $this->isDebug ? 'true' : 'false',
-                $this->isForce ? 'true' : 'false'
+                $this->isForce ? 'true' : 'false',
+                // thread
+                ($this->workerNum < 1 ? '' : ", thread => <info>{$this->workerNum}</info>")
             ),
-            sprintf('TimeStamp: <info>%s</info>', date('c')),
-            str_pad('', 50, '='),
+            sprintf('Time: <info>%s</info>', date('c')),
+            str_pad('', 55, '='),
         ];
         $s = implode(PHP_EOL, $s);
         $this->output->comment($s);
@@ -180,6 +182,8 @@ abstract class ThinkCommand extends Command
         $this->setLogPath();
         // 解析配置
         $this->setOptions($input);
+        // 初始化Snowflake
+        $this->initializeSnowflake();
         // 打印任务头
         $this->printSerialVersion();
         // main之前
@@ -260,8 +264,6 @@ abstract class ThinkCommand extends Command
         if ($this->workerNum < 2) {
             throw new \Exception('workerNum must greater than 1');
         }
-        //
-        $this->initializeSnowflake();
         //
         $pool = new Pool($this->workerNum);
         $pool->on("WorkerStart", [$this, 'onWorkerStart']);
