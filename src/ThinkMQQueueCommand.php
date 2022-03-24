@@ -25,6 +25,8 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     protected $topicName;
     /** @var string 主题tag */
     protected $messageTag;
+    /** @var bool 是否顺序消息topic(包括分区顺序和全局顺序) */
+    protected $messageOrderly = false;
     // ----------
     /** @var int 重试到第N次消费,就删除 */
     protected $maxConsumedTimes = 5;
@@ -120,12 +122,9 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
             echo '.';
             try {
                 // 长轮询表示如果topic没有消息则请求会在服务端挂住3s，3s内如果有消息可以消费则立即返回
-                $messages = $this->getMQConsumer()->consumeMessage(
-                // 一次最多消费(最多可设置为16条)
-                    $this->numOfReceiveMessages,
-                    // 长轮询时间(最多可设置为30秒)
-                    $this->waitSeconds
-                );
+                $messages = $this->messageOrderly ?
+                    $this->getMQConsumer()->consumeMessageOrderly($this->numOfReceiveMessages, $this->waitSeconds) :
+                    $this->getMQConsumer()->consumeMessage($this->numOfReceiveMessages, $this->waitSeconds);
                 foreach ($messages as $message) {
                     $message_id = $message->getMessageId();
                     // 消费次数
