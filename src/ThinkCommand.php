@@ -262,10 +262,10 @@ abstract class ThinkCommand extends Command
     /**
      * 启动swoole pool
      *
-     * @return bool
+     * @return bool|null
      * @throws \Exception
      */
-    protected function startSwoolePoolWorkers(): bool
+    protected function startSwoolePoolWorkers(): ?bool
     {
         if (empty($this->workerNum) || !is_integer($this->workerNum)) {
             throw new \Exception('workerNum must integer');
