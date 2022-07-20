@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the think-command package.
+ *
+ * @link   https://github.com/chinayin/think-command
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace think\command;
 
 use MQ\MQClient;
@@ -49,8 +58,6 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     private $consumer;
     /** @var mixed 需要申请临时token的处理 */
     private $stsToken;
-    /** @var mixed $receiptHandles */
-    private $receiptHandles;
 
     /**
      * 命令行参数配置
@@ -308,14 +315,14 @@ abstract class ThinkMQQueueCommand extends ThinkCommand
     private function isStsTokenExpired(): bool
     {
         $exp = $this->stsToken['ExpireTime'] ?? '';
-        return empty($exp) ? true : ((strtotime($exp) - time()) <= 2 * 60);
+        return empty($exp) || (strtotime($exp) - time()) <= 2 * 60;
     }
 
     /**
      * 申请临时token.
      * 需要的地方临时处理.
      */
-    protected function queryTokenForMqQueue()
+    protected function queryTokenForMqQueue(): array
     {
         return [
             'EndPoint' => '',

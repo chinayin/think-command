@@ -11,6 +11,8 @@ parameters:
         - src
     excludePaths:
         - src/AdapterTest/
+    bootstrapFiles:
+        - vendor/chinayin/thinkphp5/base.php
     ignoreErrors:
         - '#Function __LOG_MESSAGE.* not found\.#'
         - '#PHPDoc tag .* has invalid value.*#'

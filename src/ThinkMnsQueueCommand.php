@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the think-command package.
+ *
+ * @link   https://github.com/chinayin/think-command
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace think\command;
 
 use AliyunMNS\Client as MnsClient;
@@ -40,12 +49,13 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     private $mnsConfigs;
     // mns客户端
     private $mnsClient;
-    // 已收入的队列信息 (这里的信息会删除掉)
-    private $receiptHandles;
     // 是否允许动态覆盖队列名称
     protected $allowOverrideQueueTopicName = false;
 
-    // 获取mns配置
+    /**
+     * 获取mns配置
+     * @throws \Exception
+     */
     protected function getMnsConfigs()
     {
         if (null === $this->mnsConfigs) {
@@ -298,7 +308,7 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
     {
         $json = $this->getMessageBodyJson($message);
 
-        try {
+//        try {
 //            $updated = [
 //                'msg_id' => $message['MessageId'],
 //                'dequeued_count' => $message['DequeueCount'],
@@ -307,9 +317,9 @@ abstract class ThinkMnsQueueCommand extends ThinkCommand
 //                'target' => json_encode($json, JSON_UNESCAPED_UNICODE),
 //                'package' => json_encode($message, JSON_UNESCAPED_UNICODE),
 //            ];
-        } catch (\Exception $e) {
-            __LOG_MESSAGE($e);
-        }
+//        } catch (\Exception $e) {
+//            __LOG_MESSAGE($e);
+//        }
         // 写个日志
         __LOG_MESSAGE_ERROR($json, 'handleMaxDequeue___' . $message['MessageId'] . '___' . $message['DequeueCount']);
         unset($json);

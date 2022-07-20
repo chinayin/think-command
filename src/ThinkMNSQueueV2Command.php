@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * This file is part of the think-command package.
+ *
+ * @link   https://github.com/chinayin/think-command
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace think\command;
 
 use AliyunMNS\Client as MnsClient;
@@ -43,8 +52,6 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     private $client;
     /** @var mixed 需要申请临时token的处理 */
     private $stsToken;
-    /** @var mixed $receiptHandles */
-    private $receiptHandles;
 
     /**
      * 命令行参数配置
@@ -247,20 +254,8 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
      */
     protected function getMnsClient(): MnsClient
     {
-        // 非临时token的客户端
-        if (!$this->useStsToken) {
-            if (null === $this->client) {
-                $configs = $this->getConfigs();
-                if (!empty($configs)) {
-                    $this->client = new MnsClient(
-                        $configs['end_point'] ?? '',
-                        $configs['access_key_id'] ?? '',
-                        $configs['access_key_secret'] ?? '',
-                        null
-                    );
-                }
-            }
-        } else { // 临时token方案
+        // STS临时token客户端
+        if ($this->useStsToken) {
             if (// 如果客户端未初始化
                 null === $this->client ||
                 // 不存在临时token
@@ -277,6 +272,19 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
                     $this->stsToken['SecurityToken'] ?? ''
                 );
             }
+            return $this->client;
+        }
+        // 正常ak
+        if (null === $this->client) {
+            $configs = $this->getConfigs();
+            if (!empty($configs)) {
+                $this->client = new MnsClient(
+                    $configs['end_point'] ?? '',
+                    $configs['access_key_id'] ?? '',
+                    $configs['access_key_secret'] ?? '',
+                    null
+                );
+            }
         }
         return $this->client;
     }
@@ -288,14 +296,14 @@ abstract class ThinkMNSQueueV2Command extends ThinkCommand
     private function isStsTokenExpired(): bool
     {
         $exp = $this->stsToken['ExpireTime'] ?? '';
-        return empty($exp) ? true : ((strtotime($exp) - time()) <= 2 * 60);
+        return empty($exp) || (strtotime($exp) - time()) <= 2 * 60;
     }
 
     /**
      * 申请临时token.
      * 需要的地方临时处理.
      */
-    protected function queryTokenForMnsQueue()
+    protected function queryTokenForMnsQueue(): array
     {
         return [
             'EndPoint' => '',

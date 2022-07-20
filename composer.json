@@ -47,11 +47,11 @@
   "scripts": {
     "test": "vendor/bin/phpunit",
     "test-ci": "vendor/bin/phpunit --coverage-text",
-    "php-cs-fixer": "vendor/bin/php-cs-fixer fix -v",
-    "phpstan": "vendor/bin/phpstan analyse",
+    "lint": "vendor/bin/php-cs-fixer fix -v",
+    "analyse": "vendor/bin/phpstan analyse",
     "travis": [
-      "composer php-cs-fixer",
-      "composer phpstan"
+      "composer lint",
+      "composer analyse"
     ]
   }
 }
